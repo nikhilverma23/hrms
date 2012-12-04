@@ -1,0 +1,37 @@
+import os
+import sys
+
+# Dynamically set project path
+PROJECT_PATH, filename = os.path.split(__file__)
+sys.path.append(PROJECT_PATH)
+
+# Django settings for hrms project.
+
+DEBUG = True
+TEMPLATE_DEBUG = DEBUG
+
+ADMINS = (
+    ('Nikhil Verma', 'varma.nikhil22@gmail.com'),
+)
+
+MANAGERS = ADMINS
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql_psycopg2', # Add 'postgresql_psycopg2', 'mysql', 'sqlite3' or 'oracle'.
+        'NAME': 'nikhilvarma_db',                      # Or path to database file if using sqlite3.
+        'USER': 'postgres',                      # Not used with sqlite3.
+        'PASSWORD': '',                  # Not used with sqlite3.
+        'HOST': 'localhost',                      # Set to empty string for localhost. Not used with sqlite3.
+        'PORT': '5432',                      # Set to empty string for default. Not used with sqlite3.
+    }
+}
+
+
+
+EMAIL_HOST = "smtp.webfaction.com"
+EMAIL_HOST_USER = ""
+EMAIL_HOST_PASSWORD = ""
+DEFAULT_FROM_EMAIL = "info@hrms.com"
+EMAIL_USE_TLS = True
+EMAIL_SUBJECT_PREFIX = '[ HRMS ]'
