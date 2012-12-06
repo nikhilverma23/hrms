@@ -162,6 +162,9 @@ LOGGING = {
     }
 }
 
+USER_KEY_EXPIRATION_DAYS = 2
+AUTH_PROFILE_MODULE = 'nikhilvarma_hrms_db.UserProfile'
+
 import os.path
 LOCAL_SETTINGS = os.path.join(os.path.dirname(__file__), "local_settings") + ".py"
 if not os.path.exists(LOCAL_SETTINGS):
