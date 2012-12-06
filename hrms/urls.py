@@ -9,6 +9,9 @@ urlpatterns = patterns('',
     url(r'^$', "home.views.home", name='home'),
     url(r'^admin/', include(admin.site.urls)),
     url(r'^home/',include('home.urls')),
+    url(r'^registration/',include('registration.urls')),
+    url(r'^login/','registration.views.login_user',name='login'),
+    url(r'^logout/$', 'registration.views.logout_view',name='logout'),
     
       # Static content.
     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': STATIC_ROOT}),

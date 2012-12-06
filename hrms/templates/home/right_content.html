@@ -1,0 +1,12 @@
+<div id='registration_form_container'>
+	<form name="registration" action="" method="post" class="form-horizontal">
+		{% csrf_token %}
+		{{company_detail_form.as_p}}
+		<div class="control-group">
+			<div class="controls">
+				<input type='hidden' name='formname' value='registration'>
+				<input type="submit" class='btn btn-primary btn-large' value="Sign Up &raquo;" text="Sign Up" />
+			</div>
+		</div>
+	</form>
+</div>

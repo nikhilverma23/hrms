@@ -1,1 +1,34 @@
-Welcome to HR Management System
+{% extends 'base/skeleton.html' %}
+
+{% block html_css %}
+	<link rel="stylesheet" href="/static/scripts/nivo-slider/themes/dark/dark.css" type="text/css" media="screen" />
+	<link rel="stylesheet" href="/static/scripts/nivo-slider/nivo-slider.css" type="text/css" media="screen" />
+{% endblock html_css %}
+
+{% block html_js %}
+	<script type="text/javascript" src="/static/scripts/nivo-slider/jquery.nivo.slider.js"></script>
+	<script type="text/javascript">
+	$(window).load(function() {
+	    $('#slider').nivoSlider();
+	});
+	</script>
+{% endblock html_js %}
+
+{% block content %}
+	<div class="hero-unit">
+		<div id='left_content'>
+			<div class="slider-wrapper theme-dark">
+				<div id="slider" class="nivoSlider">
+					<img src="/static/images/banner1.png">
+					<img src="/static/images/banner2.gif">
+                                        <img src="/static/images/sp1.jpg">
+					<img src="/static/images/payroll_product.jpg">
+				</div>
+			</div>
+		</div>
+		<div id='right_content'>
+			{% include 'home/right_content.html'%}
+		</div>
+		<div class="clear"></div>
+	</div>
+{% endblock content %}

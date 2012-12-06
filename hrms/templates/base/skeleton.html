@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8">
+		<title>{% block head_title %}.: HRMSystems : HR Management System{% endblock head_title%}</title>
+		<meta name="description" content="{% block head_meta_description %}HRMSystems - HR Management System{% endblock head_meta_description %}">
+		<meta name="keywords" content="{% block head_meta_keywords %}HRMSystems, HR Management System{% endblock head_meta_keywords %}">
+		{% block html_head%}
+			<!-- JQuery -->
+			<link href="/static/jquery/css/redmond/jquery-ui-1.9.0.custom.css" rel="stylesheet">
+			<!-- JQuery -->
+			
+			<!-- Bootstrap -->
+			<link href="/static/bootstrap/css/bootstrap.css" rel="stylesheet">
+			<link href="/static/bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
+			<!-- Bootstrap -->
+			
+			<link href="/static/css/style.css" rel="stylesheet">
+		{% endblock html_head%}
+		{% block html_css %}
+		{% endblock html_css %}
+	</head>
+	<body>
+		{% block html_body%}
+			{% block header %}
+				{% include 'base/header.html' %}
+			{% endblock header %}
+			<div class="container">
+				<div id='content'>
+					{% block content %}
+					{% endblock content %}
+				</div>
+				{% block footer %}
+					{% include 'base/footer.html' %}
+				{% endblock footer %}
+			</div>
+		{% endblock html_body%}
+		
+		<!-- JQuery -->
+		<script src="/static/jquery/js/jquery-1.8.2.js"></script>
+		<script src="/static/jquery/js/jquery-ui-1.9.0.custom.js"></script>
+		<!-- JQuery -->
+		
+		<!-- Bootstrap -->
+		<script src="/static/bootstrap/js/bootstrap.js"></script>
+		<!-- Bootstrap -->
+		
+		{% block html_js %}
+		{% endblock html_js %}
+	</body>
+</html>

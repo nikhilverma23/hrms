@@ -1,0 +1,21 @@
+*{
+        margin: 0px;
+        padding: 0px;
+}
+body {
+        padding-top: 60px;
+        padding-bottom: 40px;
+      }
+.sconnect
+{
+        margin-top: 5px;
+}
+.clear
+{
+        clear: both;
+}
+#left_content, #right_content{float: left; width: 50%;}
+
+form.form-horizontal label{display: inline-block; width: 175px;}
+
+.field{margin-bottom: 5px;}

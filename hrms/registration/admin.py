@@ -25,7 +25,7 @@ class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name','employee')
     
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('employee_id',)
+    list_display = ('user','key')
     
     
 class LeaveAdmin(admin.ModelAdmin):

@@ -1,0 +1,13 @@
+Hi {{username}},
+
+You signed up for a new account at hrms using this email address.
+
+Your Login Details
+This is your username :- {{username}} and  Password:- {{password}}
+
+ Please follow the link below to complete your registration:
+                        
+http://%s/hrms/verify_registration/?key=%s&{{username}}=%s
+                
+Regards,
+HRMSystems Team

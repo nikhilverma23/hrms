@@ -133,6 +133,10 @@ INSTALLED_APPS = (
     'home',
 )
 
+USER_KEY_EXPIRATION_DAYS = 2
+AUTH_PROFILE_MODULE = 'hrms_db.UserProfile'
+
+
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
@@ -161,6 +165,8 @@ LOGGING = {
         },
     }
 }
+
+
 
 import os.path
 LOCAL_SETTINGS = os.path.join(os.path.dirname(__file__), "local_settings") + ".py"

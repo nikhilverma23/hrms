@@ -1,7 +1,93 @@
+#Django Imports
+from django.shortcuts import get_object_or_404, HttpResponseRedirect,\
+render_to_response, render
+from django.core.mail import EmailMessage
+from django.template import RequestContext, loader, Context
+from django.contrib.auth import authenticate, login
+
+#HRMS Imports
+from hrms import settings
+from hrms.settings import BASE_URL
+from hrms.registration.models import Company
+from hrms.registration.views import register_user
+from hrms.registration.forms import CompanyForm
+from hrms.home.forms import LoginForm
 # Create your views here.
-from django.shortcuts import render_to_response, redirect
-from django.template import RequestContext
 
 
 def home(request):
-    return render_to_response('home/home_page.html')
+    """
+    Registration process of company
+    """
+    
+    if request.method == "POST":
+        if request.POST['formname'] == 'registration':
+            company_detail_form = CompanyForm(request.POST)
+            form_login = LoginForm()
+            if company_detail_form.is_valid():
+                cd = company_detail_form.cleaned_data
+                user = register_user(cd)
+                company_obj = Company.objects.get_or_create(
+                                name = cd['title'],
+                                
+                                email = cd['email'],
+                                website = cd['website'],
+                                street1 = cd['street1'],
+                                street2 = cd['street2'],
+                                #state = cd['state']
+                                zip_code = cd['post_code'],
+                                country = cd['country'],
+                                phone_number = cd['phone_number'],
+                                category = cd['indutry_type'],
+                                business_year_start = cd['business_year_start'],
+                                business_year_end = cd['business_year_end'],
+                                description = cd['description'],
+                                )
+                
+                
+                if user:
+                    address = user.email
+                    redirect_to = 'registration/registration_confirmation?email=%s' % \
+                    address
+                    
+                    subject='[HRMSystems]'
+                    message = """Hi %s,
+                    
+                    You have successfully registered with HRMSystems.
+    
+                    Please follow the link below to complete your registration:
+                        
+                    http://%s/registration/verify_registration/?key=%s&username=%s
+                                        
+                    Regards,
+                    HRMSystems  Team
+                     
+                    """ % (user.username, BASE_URL, user.profile.key, 
+                           user.username)
+                    email = EmailMessage(subject, message, to=[address])
+                    email.send()
+                else:
+                    redirect_to = 'registration/registration_failure'
+                return HttpResponseRedirect(redirect_to)
+            else:
+                print "Form is not valid"
+    
+        if request.POST['formname'] == 'login':
+                form_login = LoginForm(request.POST)
+                company_detail_form = CompanyForm()
+                if form_login.is_valid():
+                    data = form_login.cleaned_data
+                    user = authenticate(username=data['username'], 
+                                       password=data['password'])
+                    login(request, user)
+                    return HttpResponseRedirect('/registration/department/')
+    
+    else:
+        company_detail_form = CompanyForm()
+        form_login = LoginForm()
+    return render_to_response(
+                              'home/home_page.html',
+                              {'company_detail_form':company_detail_form,
+                               'form_login' : form_login},
+                              context_instance = RequestContext(request)
+                              )
