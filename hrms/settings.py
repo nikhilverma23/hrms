@@ -58,7 +58,7 @@ MEDIA_ROOT = os.path.join(PROJECT_PATH, 'media')
 # URL that handles the media served from MEDIA_ROOT. Make sure to use a
 # trailing slash.
 # Examples: "http://media.lawrence.com/media/", "http://example.com/media/"
-MEDIA_URL =  'http://www.hrms.com/media/'
+MEDIA_URL =  'http://www.nikhilvarma.webfactional.com/media/'
 
 # Absolute path to the directory static files should be collected to.
 # Don't put anything in this directory yourself; store your static files
@@ -67,7 +67,7 @@ MEDIA_URL =  'http://www.hrms.com/media/'
 STATIC_ROOT = "/home/nikhilvarma/webapps/hrms_static/"
 # URL prefix for static files.
 # Example: "http://media.lawrence.com/static/"
-STATIC_URL = 'http://www.nikhilverma.clientpreview.com/static/'
+STATIC_URL = 'http://www.nikhilvarma.webfactional.com/static/'
 
 # Additional locations of static files
 STATICFILES_DIRS = (
@@ -133,10 +133,6 @@ INSTALLED_APPS = (
     'home',
 )
 
-USER_KEY_EXPIRATION_DAYS = 2
-AUTH_PROFILE_MODULE = 'hrms_db.UserProfile'
-
-
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
 # the site admins on every HTTP 500 error when DEBUG=False.
@@ -165,8 +161,6 @@ LOGGING = {
         },
     }
 }
-
-
 
 import os.path
 LOCAL_SETTINGS = os.path.join(os.path.dirname(__file__), "local_settings") + ".py"
