@@ -3,11 +3,9 @@ import os
 import uuid
 import datetime
 import json
-import urllib2 
-from urllib2 import urlopen
 from datetime import timedelta
 import sys, traceback
-
+import os, random, string
 #django imports
 from django.shortcuts import render_to_response
 from django.contrib.auth.models import User
@@ -20,7 +18,8 @@ from django.contrib.auth.models import Group, Permission
 
 #HRMS imports
 from hrms.home.forms import LoginForm
-
+from hrms.registration.forms import DepartmentForm, EmployeeForm
+from hrms.registration.models import Department, UserProfile, Company
 #------------------------------------------------------------------------------
 def registration_confirmation(request):
     try:
@@ -125,11 +124,12 @@ def register_user(data):
     #can_modify = Permission(name='Can Modify', codename='can_modify_something',
     #                       content_type=somemodel_ct)
     #can_modify.save()
-    
+    new_profile = new_user.profile
     profile = new_user.profile
     key = uuid.uuid4().__str__()
     profile.key = key
     profile.save()
+    #new_profile.save()
     if new_user and profile:
         return new_user
     else:
@@ -153,10 +153,94 @@ def login_error(request):
 #-------------------------------------------------------------------------------
 
 def create_department(request):
-    return render_to_response('registration/after_registration.html',
-                              {'request':request},
+    if request.method =="POST":
+        department_form = DepartmentForm(request.POST)
+        if department_form.is_valid():
+            cd = department_form.cleaned_data
+            
+            # generating random username
+            N = 8
+            random_username = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
+            random_username =  str(random_username)
+            # generating random password
+            chars = string.ascii_letters + string.digits + '!@#$%^&*()'
+            random.seed = (os.urandom(1024))
+            random_password = ''.join(random.choice(chars) for i in range(N))
+            random_password = str(random_password)
+            #Saving supervisor as a user
+            user_obj = User(
+                        username = random_username,
+                        first_name = cd['supervisor_first_name'],
+                        last_name = cd['supervisor_last_name'],
+                        email = cd['supervisor_email'],
+                        )
+            user_obj.set_password(random_password)
+            user_obj.save()
+            
+            new_profile = user_obj.profile
+            profile = user_obj.profile
+            key = uuid.uuid4().__str__()
+            profile.key = key
+            profile.first_name = user_obj.first_name
+            profile.last_name = user_obj.last_name
+            profile.email = user_obj.email
+            profile.is_supervisor = True
+            profile.save()
+            
+            
+            
+            company_obj = Company.objects.get(email=request.user.username)
+            department_obj = Department.objects.get_or_create(
+                                name=cd['name'],
+                                company = company_obj,
+                                supervisor= user_obj
+                            )
+            
+            
+            return HttpResponseRedirect('/registration/employee/')
+        else:
+            print "department form is invalid"
+    else:
+        department_form = DepartmentForm()
+    
+    return render_to_response('registration/create_department.html',
+                              {'request':request,
+                               'department_form':department_form},
                               context_instance = RequestContext(request)
                               )
     
     
+def create_employee(request):
+    if request.method == "POST":
+        employee_form = EmployeeForm(request.POST)
+        if employee_form.is_valid():
+            cd = employee_form.cleaned_data
+            N = 8
+            random_username = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
+            random_username =  str(random_username)
+            # generating random password
+            chars = string.ascii_letters + string.digits + '!@#$%^&*()'
+            random.seed = (os.urandom(1024))
+            random_password = ''.join(random.choice(chars) for i in range(N))
+            random_password = str(random_password)
+            
+            user_obj =  User(
+                            username = random_username,
+                            first_name = cd['first_name'],
+                            last_name = cd['last_name'],
+                            email = cd['employee_email'],
+                        )
+            
+            user_obj.set_password(random_password)
+            user_obj.save()
+        else:
+            print "Employee Formis invalid"
+    else:
+        employee_form = EmployeeForm()
+            
+    return render_to_response('registration/create_employee.html',
+                              {'request':request,
+                               'employee_form':employee_form},
+                              context_instance = RequestContext(request)
+                              )
 

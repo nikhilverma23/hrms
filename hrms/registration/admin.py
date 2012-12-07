@@ -18,11 +18,11 @@ class CompanyAdmin(admin.ModelAdmin):
     list_per_page = 50
     date_hierarchy = 'business_year_start'
 
-class SupervisorAdmin(admin.ModelAdmin):
-    list_display = ('name',)
+#class SupervisorAdmin(admin.ModelAdmin):
+#    list_display = ('name',)
     
 class DepartmentAdmin(admin.ModelAdmin):
-    list_display = ('name','employee')
+    list_display = ('name','company')
     
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user','key')
@@ -38,7 +38,7 @@ class RestrictedDayAdmin(admin.ModelAdmin):
 admin.site.register(Category,CategoryAdmin)
 admin.site.register(Country,CountryAdmin)
 admin.site.register(Company,CompanyAdmin)
-admin.site.register(Supervisor,SupervisorAdmin)
+#admin.site.register(Supervisor,SupervisorAdmin)
 admin.site.register(Department,DepartmentAdmin)
 admin.site.register(UserProfile,UserProfileAdmin)
 admin.site.register(Leave,LeaveAdmin)

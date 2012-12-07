@@ -22,11 +22,11 @@ class CompanyForm(forms.Form):
     country = forms.ModelChoiceField(queryset=Country.objects.all(),required=True)
     # Phone Number
     phone_number = forms.CharField(max_length=20,required=True)
-    # Terms and Conditions
-    toc = forms.BooleanField(initial=True)
     # Business Years
     business_year_start = forms.DateField(initial="2012-04-02")
     business_year_end = forms.DateField(initial="2012-04-03")
+    # Terms and Conditions
+    toc = forms.BooleanField(label="I agree the terms & conditions",initial=True)
     
     
     
@@ -54,4 +54,31 @@ class CompanyForm(forms.Form):
             if self.cleaned_data['password1'] != self.cleaned_data['password2']:
                 raise forms.ValidationError("The two password fields didn't match.")        
         return self.cleaned_data
-        
+    
+class DepartmentForm(forms.Form):
+    """
+    company will create these departments
+    """
+    
+    name = forms.CharField(label= "Department Name", max_length=255,required=True)
+    #employee = forms.CharField(label="Employee", max_length=255,required=False)
+    #employee_email = forms.EmailField(required=True, initial = "nikhilverma55@gmail.com")
+    #supervisor_username = forms.CharField(label= "Supervisor Username",max_length=255, required=False)
+    supervisor_first_name = forms.CharField(label= "Supervisor First Name",max_length=255, required=False)
+    supervisor_last_name = forms.CharField(label= "Supervisor Last Name",max_length=255, required=False)
+    supervisor_email = forms.EmailField(required=True, initial = "nikhilverma55@gmail.com")
+    
+    
+class EmployeeForm(forms.Form):
+    """
+    Decsribing the Employee
+    """
+    first_name = forms.CharField(label= "Employee First Name", max_length=255,required=True)
+    last_name = forms.CharField(label= "Employee Last Name", max_length=255,required=True)
+    employee_email = forms.EmailField(required=True, initial = "nikhilverma55@gmail.com")
+    
+       
+    
+    
+    
+    

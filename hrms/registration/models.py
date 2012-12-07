@@ -28,33 +28,9 @@ class Country(models.Model):
         return self.name
     
 
-class Supervisor(models.Model):
-    """
-    String the Reporting Manager info
-    """
-    
-    name = models.ForeignKey(User)
-    
-    def __unicode__(self):
-        return self.name.username
     
 
-class Department(models.Model):
-    """
-    Department of a company
-    """
     
-    name = models.CharField(
-                            max_length=1024,help_text="Department's Name"
-                            )
-    employee = models.ForeignKey(User, null=True, blank=True)
-    
-    supervisor = models.ForeignKey(Supervisor)
-    
-    
-    def __unicode__(self):
-        return self.name
-
 class Company(models.Model):
     """
     Describing the company attributes
@@ -74,7 +50,6 @@ class Company(models.Model):
     phone_number = models.CharField(max_length=80,null=True,blank=True)
     description = models.TextField(blank=True,null=True)
     category = models.ForeignKey(Category)
-    department = models.ManyToManyField(Department,null=True,blank=True)
     business_year_start = models.DateField()
     business_year_end = models.DateField()
     toc = models.BooleanField(default=True, help_text="Terms and Conditions")
@@ -84,6 +59,25 @@ class Company(models.Model):
         return self.name
     
 
+class Department(models.Model):
+    """
+    Department of a company
+    """
+    
+    supervisor = models.ForeignKey(User, related_name="supervisor",null=True,blank=True)
+    employee = models.ForeignKey(User, null=True, blank=True)
+    name = models.CharField(
+                            max_length=1024,help_text="Department's Name"
+                            )
+    company = models.ForeignKey(Company)
+    
+    
+    
+    
+    def __unicode__(self):
+        return self.name
+User.new_employee_profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])
+    
 
     
 class UserProfile(models.Model):
@@ -111,7 +105,7 @@ class UserProfile(models.Model):
     
     
     def __unicode__(self):
-        return self.user.get_full_name()
+        return self.user.username
     
 
 User.profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])    
@@ -127,7 +121,6 @@ class Leave(models.Model):
     end_date = models.DateField()
     user = models.ForeignKey(User)
     department = models.ForeignKey(Department)
-    supervisor = models.ForeignKey(Supervisor)
     leave_count = models.CharField(max_length=5,null=True,blank=True)
     
     def __unicode__(self):
