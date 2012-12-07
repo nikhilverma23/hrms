@@ -155,51 +155,64 @@ def login_error(request):
 def create_department(request):
     if request.method =="POST":
         department_form = DepartmentForm(request.POST)
+        import pdb
+        pdb.set_trace()
         if department_form.is_valid():
             cd = department_form.cleaned_data
-            
-            # generating random username
-            N = 8
-            random_username = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
-            random_username =  str(random_username)
-            # generating random password
-            chars = string.ascii_letters + string.digits + '!@#$%^&*()'
-            random.seed = (os.urandom(1024))
-            random_password = ''.join(random.choice(chars) for i in range(N))
-            random_password = str(random_password)
-            #Saving supervisor as a user
-            user_obj = User(
-                        username = random_username,
-                        first_name = cd['supervisor_first_name'],
-                        last_name = cd['supervisor_last_name'],
-                        email = cd['supervisor_email'],
-                        )
-            user_obj.set_password(random_password)
-            user_obj.save()
-            
-            new_profile = user_obj.profile
-            profile = user_obj.profile
-            key = uuid.uuid4().__str__()
-            profile.key = key
-            profile.first_name = user_obj.first_name
-            profile.last_name = user_obj.last_name
-            profile.email = user_obj.email
-            profile.is_supervisor = True
-            profile.save()
-            
-            
-            
-            company_obj = Company.objects.get(email=request.user.username)
-            department_obj = Department.objects.get_or_create(
-                                name=cd['name'],
-                                company = company_obj,
-                                supervisor= user_obj
-                            )
-            
-            
-            return HttpResponseRedirect('/registration/employee/')
-        else:
             print "department form is invalid"
+            
+            
+        else:
+            department_counter = 0
+            
+            department_name_list = request.POST.getlist('name[]')
+            supervisor_first_name_list = request.POST.getlist('supervisor_first_name[]')
+            supervisor_last_name_list = request.POST.getlist('supervisor_last_name[]')
+            supervisor_email_list = request.POST.getlist('supervisor_email[]')
+            for department_name in request.POST.getlist('name[]'):
+                
+            
+                # generating random username
+                N = 8
+                random_username = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
+                random_username =  str(random_username)
+                # generating random password
+                chars = string.ascii_letters + string.digits + '!@#$%^&*()'
+                random.seed = (os.urandom(1024))
+                random_password = ''.join(random.choice(chars) for i in range(N))
+                random_password = str(random_password)
+                #Saving supervisor as a user
+                user_obj = User(
+                            username = random_username,
+                            first_name = supervisor_first_name_list[department_counter],
+                            last_name = supervisor_last_name_list[department_counter],
+                            email = supervisor_email_list[department_counter],
+                            )
+                user_obj.set_password(random_password)
+                user_obj.save()
+                
+                new_profile = user_obj.profile
+                profile = user_obj.profile
+                key = uuid.uuid4().__str__()
+                profile.key = key
+                profile.first_name = user_obj.first_name
+                profile.last_name = user_obj.last_name
+                profile.email = user_obj.email
+                profile.is_supervisor = True
+                profile.save()
+                
+                
+                
+                company_obj = Company.objects.get(email=request.user.username)
+                department_obj = Department.objects.get_or_create(
+                                    name=department_name_list[department_counter],
+                                    company = company_obj,
+                                    supervisor= user_obj
+                                )
+                
+                department_counter += 1
+            return HttpResponseRedirect('/registration/employee/')
+            
     else:
         department_form = DepartmentForm()
     
@@ -215,26 +228,36 @@ def create_employee(request):
         employee_form = EmployeeForm(request.POST)
         if employee_form.is_valid():
             cd = employee_form.cleaned_data
-            N = 8
-            random_username = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
-            random_username =  str(random_username)
-            # generating random password
-            chars = string.ascii_letters + string.digits + '!@#$%^&*()'
-            random.seed = (os.urandom(1024))
-            random_password = ''.join(random.choice(chars) for i in range(N))
-            random_password = str(random_password)
-            
-            user_obj =  User(
-                            username = random_username,
-                            first_name = cd['first_name'],
-                            last_name = cd['last_name'],
-                            email = cd['employee_email'],
-                        )
-            
-            user_obj.set_password(random_password)
-            user_obj.save()
-        else:
             print "Employee Formis invalid"
+        else:
+            employment_counter = 0
+            
+            first_name_list = request.POST.getlist('first_name[]')
+            last_name_list = request.POST.getlist('last_name[]')
+            employee_email_list = request.POST.getlist('employee_email[]')
+            
+            for employee_name in request.POST.getlist('first_name[]'):
+                N = 8
+                random_username = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
+                random_username =  str(random_username)
+                # generating random password
+                chars = string.ascii_letters + string.digits + '!@#$%^&*()'
+                random.seed = (os.urandom(1024))
+                random_password = ''.join(random.choice(chars) for i in range(N))
+                random_password = str(random_password)
+                
+                user_obj =  User(
+                                username = random_username,
+                                first_name = first_name_list[employment_counter],
+                                last_name = last_name_list[employment_counter],
+                                email = employee_email_list[employment_counter],
+                            )
+                
+                user_obj.set_password(random_password)
+                user_obj.save()
+                employment_counter += 1
+        
+            
     else:
         employee_form = EmployeeForm()
             

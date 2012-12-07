@@ -60,13 +60,13 @@ class DepartmentForm(forms.Form):
     company will create these departments
     """
     
-    name = forms.CharField(label= "Department Name", max_length=255,required=True)
+    name = forms.CharField(max_length=255,required=True)
     #employee = forms.CharField(label="Employee", max_length=255,required=False)
     #employee_email = forms.EmailField(required=True, initial = "nikhilverma55@gmail.com")
     #supervisor_username = forms.CharField(label= "Supervisor Username",max_length=255, required=False)
-    supervisor_first_name = forms.CharField(label= "Supervisor First Name",max_length=255, required=False)
-    supervisor_last_name = forms.CharField(label= "Supervisor Last Name",max_length=255, required=False)
-    supervisor_email = forms.EmailField(required=True, initial = "nikhilverma55@gmail.com")
+    supervisor_first_name = forms.CharField(max_length=255, required=False)
+    supervisor_last_name = forms.CharField(max_length=255, required=False)
+    supervisor_email = forms.EmailField(required=True)
     
     
 class EmployeeForm(forms.Form):

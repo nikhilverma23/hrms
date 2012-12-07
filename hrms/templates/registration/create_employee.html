@@ -1,16 +1,65 @@
 {% extends 'base/skeleton.html' %}
 
+{% block html_js %}
+	<script src="/static/js/handlebars.js"></script>
+	<script id="employee_section" type="text/x-handlebars-template">
+		<div class="field">
+			<input type="text" maxlength="255" name="first_name[]" class="input-medium" id="id_first_name" value="{% templatetag openvariable %}first_name{% templatetag closevariable %}" />
+			<input type="text" maxlength="255" name="last_name[]" class="input-medium" id="id_last_name" value="{% templatetag openvariable %}last_name{% templatetag closevariable %}" />
+			<input type="text" maxlength="255" name="employee_email[]" class="input-medium" id="id_employee_email" value="{% templatetag openvariable %}employee_email{% templatetag closevariable %}" />
+			<a href="javascript:void(0)" class="delete_employee_link"><img src="/static/images/delete_icon.png"/></a>
+			
+		</div>
+	</script>
+	<script>
+		var employee_section_source   = $("#employee_section").html();
+		var employee_section_template = Handlebars.compile(employee_section_source);
+		function add_employee_section(employee_section_data)
+		{
+			if(!employee_section_data)
+				employee_section_data = {};
+			var employee_section_html = employee_section_template(employee_section_data);
+			$("#employee_section_div").append(employee_section_html);
+		}
+		$(".add_employee_link").click(function(){
+			add_employee_section()
+		});
+		$('#employee_section_div').on('click', 'a.delete_employee_link', function(e) {
+			$(this).parent().remove();
+		});
+		add_employee_section();
+	</script>
+	
+	
+{% endblock html_js %}
+
 {% block content %}
 <div id='registration_form_container'>
-	<form name="department" action="" method="post" class="form-horizontal">
+	<form name="employee" action="" method="post" class="form-horizontal">
 		{% csrf_token %}
-		{{employee_form.as_p}}
+		<div>
+			<fieldset>
+				<legend>Employee</legend>
+				<div class="field">
+					
+					<label>Employee First Name</label>
+					<label>Employee Last Name</label>
+					<label>Employee Email</label>
+				</div>
+				<div id="employee_section_div"></div>
+				<div class="delete_employment_link" style="text-align: right;">
+					<a class="btn btn-success add_employee_link" href="javascript:void(0)"><i class="icon-plus-sign icon-white"></i> Add More</a>
+					<a class="btn btn-danger" href="javascript:void(0)"><i class="icon-minus-sign icon-white"></i> Remove</a>
+				</div>
+			</fieldset>
+		</div>
 		<div class="control-group">
 			<div class="controls">
 				<input type='hidden' name='formname' value='department'>
-				<input type="submit" class='btn btn-primary btn-small' value="Create Department &raquo;" text="Sign Up" />
+				<input type="submit" class='btn btn-primary btn-small' value="Create Employee &raquo;" text="Sign Up" />
 			</div>
 		</div>
+		
 	</form>
 </div>
 

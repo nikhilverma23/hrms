@@ -1,16 +1,67 @@
 {% extends 'base/skeleton.html' %}
 
+
+{% block html_js %}
+	<script src="/static/js/handlebars.js"></script>
+	<script id="department_section" type="text/x-handlebars-template">
+		<div class="field">
+			<input type="text" maxlength="256" name="name[]" class="input-medium" id="id_name" value="{% templatetag openvariable %}name{% templatetag closevariable %}" />
+			<input type="text" maxlength="255" name="supervisor_first_name[]" class="input-medium" id="id_supervisor_first_name" value="{% templatetag openvariable %}supervisor_first_name{% templatetag closevariable %}" />
+			<input type="text" maxlength="255" name="supervisor_last_name[]" class="input-medium" id="id_supervisor_last_name" value="{% templatetag openvariable %}supervisor_last_name{% templatetag closevariable %}" />
+			<input type="text" maxlength="255" name="supervisor_email[]" class="input-medium" id="id_supervisor_email" value="{% templatetag openvariable %}supervisor_email{% templatetag closevariable %}" />
+			<a href="javascript:void(0)" class="delete_department_link"><img src="/static/images/delete_icon.png"/></a>
+			
+		</div>
+	</script>
+	<script>
+		var department_section_source   = $("#department_section").html();
+		var department_section_template = Handlebars.compile(department_section_source);
+		function add_department_section(department_section_data)
+		{
+			if(!department_section_data)
+				department_section_data = {};
+			var department_section_html = department_section_template(department_section_data);
+			$("#department_section_div").append(department_section_html);
+		}
+		$(".add_department_link").click(function(){
+			add_department_section()
+		});
+		$('#department_section_div').on('click', 'a.delete_department_link', function(e) {
+			$(this).parent().remove();
+		});
+		add_department_section();
+	</script>
+	
+	
+{% endblock html_js %}
+
 {% block content %}
 <div id='registration_form_container'>
 	<form name="department" action="" method="post" class="form-horizontal">
 		{% csrf_token %}
-		{{department_form.as_p}}
+		<div>
+			<fieldset>
+				<legend>Department</legend>
+				<div class="field">
+					<label style="width: 165px;">Department Name</label>
+					<label style="width: 165px;">Supervisor First Name</label>
+					<label style="width: 102px;">Supervisor Last Name</label>
+					<label style="width: 102px;">Supervisor Email</label>
+				</div>
+				<div id="department_section_div"></div>
+				<div class="delete_department_link" style="text-align: right;">
+					<a class="btn btn-success add_department_link" href="javascript:void(0)"><i class="icon-plus-sign icon-white"></i> Add More</a>
+					<a class="btn btn-danger" href="javascript:void(0)"><i class="icon-minus-sign icon-white"></i> Remove</a>
+				</div>
+			</fieldset>
+		</div>
 		<div class="control-group">
 			<div class="controls">
 				<input type='hidden' name='formname' value='department'>
 				<input type="submit" class='btn btn-primary btn-small' value="Create Department &raquo;" text="Sign Up" />
 			</div>
 		</div>
+                
 	</form>
 </div>
 
