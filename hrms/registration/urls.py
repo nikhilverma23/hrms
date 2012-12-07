@@ -10,5 +10,5 @@ urlpatterns = patterns(
     url(r'^verify_registration/','verify_registration',name='registration-verify'),
     url(r'^department/' ,'create_department',name="create-department"),
     url(r'^employee/' ,'create_employee',name="create-employee"),
-    
+    url(r'^summary/' ,'summary',name="summary"),
 )

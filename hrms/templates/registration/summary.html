@@ -1,0 +1,9 @@
+{% extends 'base/skeleton.html' %}
+
+{% block content %}
+
+{{company_obj}}
+{% for department in department_obj %}
+    {{department}}{{department.employee}}
+{% endfor %}
+{% endblock %}

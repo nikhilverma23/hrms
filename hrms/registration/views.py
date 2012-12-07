@@ -155,8 +155,7 @@ def login_error(request):
 def create_department(request):
     if request.method =="POST":
         department_form = DepartmentForm(request.POST)
-        import pdb
-        pdb.set_trace()
+        
         if department_form.is_valid():
             cd = department_form.cleaned_data
             print "department form is invalid"
@@ -256,6 +255,7 @@ def create_employee(request):
                 user_obj.set_password(random_password)
                 user_obj.save()
                 employment_counter += 1
+            return HttpResponseRedirect('/registration/summary/')
         
             
     else:
@@ -267,3 +267,19 @@ def create_employee(request):
                               context_instance = RequestContext(request)
                               )
 
+def summary(request):
+    """
+    This will tell the complete summary in a Table
+    """
+ 
+    company_obj = Company.objects.get(email=request.user)
+    department_obj = Department.objects.filter(company=company_obj)
+    
+    return render_to_response('registration/summary.html',
+                                {'request':request,
+                                'company_obj':company_obj,
+                                'department_obj':department_obj
+                                },
+                                context_instance = RequestContext(request)
+                              )
+    
