@@ -11,4 +11,5 @@ urlpatterns = patterns(
     url(r'^department/' ,'create_department',name="create-department"),
     url(r'^employee/' ,'create_employee',name="create-employee"),
     url(r'^summary/' ,'summary',name="summary"),
+    url(r'^profile/change_password' ,'change_password',name="change-password"),
 )

@@ -15,6 +15,7 @@ from django.conf import settings
 from django.template import RequestContext
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group, Permission
+from django.core.mail import send_mail
 
 #HRMS imports
 from hrms.home.forms import LoginForm
@@ -209,7 +210,18 @@ def create_department(request):
                                     supervisor= user_obj
                                 )
                 
+                subject = "New Department Created on HRMS"
+                msg = "New Department is created on HRMS"
+                
+                send_mail(
+                    subject,
+                    msg,
+                    'HRMS <noreply@hrms.com>',
+                    [supervisor_email_list[department_counter]],
+                    fail_silently=True
+                )
                 department_counter += 1
+                
             return HttpResponseRedirect('/registration/employee/')
             
     else:
@@ -254,7 +266,20 @@ def create_employee(request):
                 
                 user_obj.set_password(random_password)
                 user_obj.save()
+                
+                subject = "New Employee Added on HRMS"
+                msg = "New Employee is Added on HRMS"
+                
+                send_mail(
+                    subject,
+                    msg,
+                    'HRMS <noreply@hrms.com>',
+                    [employee_email_list[employment_counter]],
+                    fail_silently=True
+                )
+                
                 employment_counter += 1
+                
             return HttpResponseRedirect('/registration/summary/')
         
             
@@ -283,3 +308,13 @@ def summary(request):
                                 context_instance = RequestContext(request)
                               )
     
+def change_password(request):
+    """
+    Change password for logged in user
+    """
+    
+    return render_to_response('registration/change_password.html',
+                                {'request':request,
+                                },
+                                context_instance = RequestContext(request)
+                              )
