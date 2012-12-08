@@ -7,9 +7,8 @@
 			<input type="text" maxlength="255" name="first_name[]" class="input-medium" id="id_first_name" value="{% templatetag openvariable %}first_name{% templatetag closevariable %}" />
 			<input type="text" maxlength="255" name="last_name[]" class="input-medium" id="id_last_name" value="{% templatetag openvariable %}last_name{% templatetag closevariable %}" />
 			<input type="text" maxlength="255" name="employee_email[]" class="input-medium" id="id_employee_email" value="{% templatetag openvariable %}employee_email{% templatetag closevariable %}" />
-			<select name="department[]" class="input-medium" id="id_department">
-				<option name="department[]" class="input-medium" id="id_department">{% templatetag openvariable %}department{% templatetag closevariable %}</option>
-			</select>
+			{{employee_form.department}}
+			
 			<a href="javascript:void(0)" class="delete_employee_link"><img src="/static/images/delete_icon.png"/></a>
 			
 		</div>
