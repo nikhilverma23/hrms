@@ -244,6 +244,7 @@ def create_department(request):
 def create_employee(request):
     if request.method == "POST":
         employee_form = EmployeeForm(request.POST)
+        
         if employee_form.is_valid():
             cd = employee_form.cleaned_data
             print "Employee Form is invalid"
@@ -273,10 +274,13 @@ def create_employee(request):
                                 email = employee_email_list[employment_counter],
                             )
                 
-                
+               
                 user_obj.set_password(random_password)
                 user_obj.save()
-                
+                company_obj = Company.objects.get(email=request.user.username)
+                department_obj = Department.objects.get_or_create(
+                                   
+                                )
                 subject = "New Employee Added on HRMS"
                 msg = "Hi "
                 
@@ -294,10 +298,14 @@ def create_employee(request):
         
             
     else:
+        
         employee_form = EmployeeForm()
+        company_obj = Company.objects.get(email=request.user.username)
+        department = company_obj.department_set.all()
             
     return render_to_response('registration/create_employee.html',
                               {'request':request,
+                               'department':department,
                                'employee_form':employee_form},
                               context_instance = RequestContext(request)
                               )
