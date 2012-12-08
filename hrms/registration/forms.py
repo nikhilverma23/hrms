@@ -1,5 +1,5 @@
 from django import forms
-from hrms.registration.models import Category, Country
+from hrms.registration.models import Category, Country, Department
 
 
 class CompanyForm(forms.Form):
@@ -73,6 +73,7 @@ class EmployeeForm(forms.Form):
     """
     Decsribing the Employee
     """
+    department = forms.ModelChoiceField(queryset=Department.objects.all(),empty_label=u'Select Department',required=True)
     first_name = forms.CharField(label= "Employee First Name", max_length=255,required=True)
     last_name = forms.CharField(label= "Employee Last Name", max_length=255,required=True)
     employee_email = forms.EmailField(required=True, initial = "nikhilverma55@gmail.com")

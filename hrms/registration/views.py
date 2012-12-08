@@ -12,10 +12,10 @@ from django.contrib.auth.models import User
 from django.http import HttpResponseRedirect
 from django.contrib.auth import load_backend, login, logout
 from django.conf import settings
-from django.template import RequestContext
 from django.contrib.contenttypes.models import ContentType
 from django.contrib.auth.models import Group, Permission
 from django.core.mail import send_mail
+from django.template import RequestContext, loader, Context
 
 #HRMS imports
 from hrms.home.forms import LoginForm
@@ -200,9 +200,8 @@ def create_department(request):
                 profile.email = user_obj.email
                 profile.is_supervisor = True
                 profile.save()
-                
-                
-                
+                # Taking out the companydetails for filling
+                # department object
                 company_obj = Company.objects.get(email=request.user.username)
                 department_obj = Department.objects.get_or_create(
                                     name=department_name_list[department_counter],
@@ -210,9 +209,17 @@ def create_department(request):
                                     supervisor= user_obj
                                 )
                 
-                subject = "New Department Created on HRMS"
-                msg = "New Department is created on HRMS"
-                
+                subject = "Supervisor of %s department" % department_obj[0].name
+                 # Send them an email.
+                t = loader.get_template('registration/new_department.txt')
+                full_name = user_obj.first_name + " " + user_obj.last_name
+                c = Context({
+                    'department_name':department_obj[0].name,
+                    'name':full_name,
+                    'username':user_obj.username,
+                    'password':random_password,
+                })
+                msg = t.render(c)
                 send_mail(
                     subject,
                     msg,
@@ -239,19 +246,21 @@ def create_employee(request):
         employee_form = EmployeeForm(request.POST)
         if employee_form.is_valid():
             cd = employee_form.cleaned_data
-            print "Employee Formis invalid"
+            print "Employee Form is invalid"
         else:
             employment_counter = 0
-            
             first_name_list = request.POST.getlist('first_name[]')
             last_name_list = request.POST.getlist('last_name[]')
             employee_email_list = request.POST.getlist('employee_email[]')
             
             for employee_name in request.POST.getlist('first_name[]'):
+                # generating random username because user will login
+                # and go to change password page.
                 N = 8
                 random_username = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
                 random_username =  str(random_username)
-                # generating random password
+                # generating random password because user will login
+                # and go to change password
                 chars = string.ascii_letters + string.digits + '!@#$%^&*()'
                 random.seed = (os.urandom(1024))
                 random_password = ''.join(random.choice(chars) for i in range(N))
@@ -264,11 +273,12 @@ def create_employee(request):
                                 email = employee_email_list[employment_counter],
                             )
                 
+                
                 user_obj.set_password(random_password)
                 user_obj.save()
                 
                 subject = "New Employee Added on HRMS"
-                msg = "New Employee is Added on HRMS"
+                msg = "Hi "
                 
                 send_mail(
                     subject,

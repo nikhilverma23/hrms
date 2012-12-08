@@ -65,7 +65,7 @@ class Department(models.Model):
     """
     
     supervisor = models.ForeignKey(User, related_name="supervisor",null=True,blank=True)
-    employee = models.ForeignKey(User, null=True, blank=True)
+    employee = models.ManyToManyField(User, null=True, blank=True)
     name = models.CharField(
                             max_length=1024,help_text="Department's Name"
                             )
