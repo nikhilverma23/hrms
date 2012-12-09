@@ -2,12 +2,22 @@
 
 {% block content %}
 
-{{company_obj}}
+<table border="1" cellpadding="5" cellspacing="5">
 {% for department in department_obj %}
-    {{department}}
+    <tr>
+        <td>{{company_obj}}</td>
+        <td>{{department}}</td>
+        <td>{{department.supervisor.email}}</td>
+        <td>&nbsp;</td>
+    </tr>
     {% for emp_name in department.employee.all %}
-        {{emp_name}}
+        <tr>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>&nbsp;</td>
+            <td>{{emp_name}}</td>
+        </tr>
     {% endfor %}
 {% endfor %}
-
+</table>
 {% endblock %}

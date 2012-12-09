@@ -230,7 +230,9 @@ def create_department(request):
     
     return render_to_response('registration/create_department.html',
                               {'request':request,
-                               'department_form':department_form},
+                               'department_form':department_form,
+                               'active':'department'
+                               },
                               context_instance = RequestContext(request)
                               )
 #---------------------------------------------------------------------------    
@@ -313,7 +315,9 @@ def create_employee(request):
     return render_to_response('registration/create_employee.html',
                               {'request':request,
                                'department':department,
-                               'employee_form':employee_form},
+                               'employee_form':employee_form,
+                               'active':'employee'
+                               },
                               context_instance = RequestContext(request)
                             )
 #---------------------------------------------------------------------------
