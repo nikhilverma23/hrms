@@ -80,7 +80,7 @@ def home(request):
                     user = authenticate(username=data['username'], 
                                        password=data['password'])
                     login(request, user)
-                    return HttpResponseRedirect('/registration/department/')
+                    return HttpResponseRedirect('/registration/summary/')
     
     else:
         company_detail_form = CompanyForm()

@@ -19,8 +19,10 @@ from django.template import RequestContext, loader, Context
 
 #HRMS imports
 from hrms.home.forms import LoginForm
-from hrms.registration.forms import DepartmentForm, EmployeeForm
+from hrms.registration.forms import DepartmentForm, EmployeeForm,\
+PasswordForm
 from hrms.registration.models import Department, UserProfile, Company
+from hrms.settings import BASE_URL
 #------------------------------------------------------------------------------
 def registration_confirmation(request):
     try:
@@ -188,7 +190,7 @@ def create_department(request):
                             last_name = supervisor_last_name_list[department_counter],
                             email = supervisor_email_list[department_counter],
                             )
-                user_obj.set_password(random_password)
+                user_obj.password = random_password
                 user_obj.save()
                 
                 new_profile = user_obj.profile
@@ -214,10 +216,12 @@ def create_department(request):
                 t = loader.get_template('registration/new_department.txt')
                 full_name = user_obj.first_name + " " + user_obj.last_name
                 c = Context({
+                    'id':user_obj.id,
                     'department_name':department_obj[0].name,
                     'name':full_name,
                     'username':user_obj.username,
                     'password':random_password,
+                    'base_url':BASE_URL,
                 })
                 msg = t.render(c)
                 send_mail(
@@ -253,7 +257,7 @@ def create_employee(request):
             first_name_list = request.POST.getlist('first_name[]')
             last_name_list = request.POST.getlist('last_name[]')
             employee_email_list = request.POST.getlist('employee_email[]')
-            
+            employee_department_list = request.POST.getlist('employee_department[]')
             for employee_name in request.POST.getlist('first_name[]'):
                 # generating random username because user will login
                 # and go to change password page.
@@ -275,15 +279,28 @@ def create_employee(request):
                             )
                 
                
-                user_obj.set_password(random_password)
+                user_obj.password = random_password
                 user_obj.save()
                 company_obj = Company.objects.get(email=request.user.username)
-                department_obj = Department.objects.get_or_create(
-                                   
-                                )
-                subject = "New Employee Added on HRMS"
-                msg = "Hi "
+                department_obj = Department.objects.filter(company=company_obj)
+                for department in department_obj:
+                    department.employee.add(user_obj.id)
                 
+                
+                
+                 # Send them an email.
+                t = loader.get_template('registration/new_employee.txt')
+                full_name = user_obj.first_name + " " + user_obj.last_name
+                c = Context({
+                    'id':user_obj.id,
+                    'department_name':department_obj[0].name,
+                    'name':full_name,
+                    'username':user_obj.username,
+                    'password':random_password,
+                    'base_url':BASE_URL,
+                })
+                msg = t.render(c)
+                subject = "Supervisor of %s department" % department_obj[0].name
                 send_mail(
                     subject,
                     msg,
@@ -326,13 +343,55 @@ def summary(request):
                                 context_instance = RequestContext(request)
                               )
     
-def change_password(request):
+def password_reset(request):
     """
     Change password for logged in user
     """
     
-    return render_to_response('registration/change_password.html',
+    if request.method == "POST":
+        password_form = PasswordForm(request.POST)
+        if password_form.is_valid():
+            cd = password_form.cleaned_data
+            user_obj = User.objects.get(id=request.GET['id'])
+            user_obj.username = cd['username']
+            user_obj.password = cd['password']
+            user_obj.save()
+            userprofile_obj = UserProfile.objects.get(username=username)
+            if userprofile_obj.is_supervisor:
+                return HttpResponseRedirect('registration/supervisor_detail/')
+            else:
+                return HttpResponseRedirect('registration/employee_detail/')
+        else:
+            print "Default password Form is invalid !"
+            
+    else:
+        password_form = PasswordForm()
+            
+    
+    
+    return render_to_response('registration/password_reset_form.html',
                                 {'request':request,
+                                 'password_form':password_form,
                                 },
                                 context_instance = RequestContext(request)
                               )
+
+
+def supervisor_detail(request):
+    """
+    Describe the detail of leaves to employees.
+    """
+
+    return render_to_response('registration/supervisor_detail.html',
+                                    {'request':request},
+                                    context_instance = RequestContext(request)
+                                )
+
+def employee_detail(request):
+    """
+    Leads to Leave application form because they will not have any rights.
+    """
+    return render_to_response('registration/employee_detail.html',
+                                    {'request':request},
+                                    context_instance = RequestContext(request)
+                                )

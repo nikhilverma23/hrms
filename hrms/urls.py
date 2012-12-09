@@ -1,6 +1,7 @@
 from django.conf.urls import patterns, include, url
 from django.views.generic.simple import direct_to_template
 from hrms.settings import MEDIA_ROOT, STATIC_ROOT
+from django.contrib.auth.views import password_reset
 from django.contrib import admin
 admin.autodiscover()
 
@@ -16,4 +17,5 @@ urlpatterns = patterns('',
       # Static content.
     (r'^static/(?P<path>.*)$', 'django.views.static.serve', {'document_root': STATIC_ROOT}),
     (r'^media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': MEDIA_ROOT}),
+    
 )

@@ -79,7 +79,15 @@ class EmployeeForm(forms.Form):
     employee_email = forms.EmailField(required=True, initial = "nikhilverma55@gmail.com")
     
        
+
+class PasswordForm(forms.Form):
+    """
+    This form changes the default username and password
+    """
+    
+    username = forms.CharField(max_length=80,required=True)
+    password = forms.CharField(widget=forms.PasswordInput,required=True)
     
     
-    
+   
     

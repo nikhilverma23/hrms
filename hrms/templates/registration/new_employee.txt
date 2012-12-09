@@ -1,0 +1,16 @@
+Hi {{name}}
+
+You have been selected as an Employee of {{department_name}}
+Your login credentials are as follows:-
+
+Username : {{username}}
+Password : {{password}}
+
+Click this Link to change the default credentials:-
+
+http://{{base_url}}/registration/password_reset/?id={{id}}
+
+
+Thanks
+
+HRMSystems

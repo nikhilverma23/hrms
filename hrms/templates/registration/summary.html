@@ -4,6 +4,10 @@
 
 {{company_obj}}
 {% for department in department_obj %}
-    {{department}}{{department.employee}}
+    {{department}}
+    {% for emp_name in department.employee.all %}
+        {{emp_name}}
+    {% endfor %}
 {% endfor %}
+
 {% endblock %}
