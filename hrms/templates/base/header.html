@@ -8,7 +8,7 @@
 	    </a>
 	    <a class="brand" href="{{request.settings.BASE_URL}}">HRMSystems</a>
 	    <div class="nav-collapse collapse">
-	      {% if request.user.is_authenticated and request.user.is_staff == True %}
+	      {% if request.user.is_authenticated and request.user.is_staff  %}
 			<ul class="nav nav-tabs">
 			  <li class="active"><a href="{% url create-department %}">Departments</a></li>
 			  <li class="active"><a href="{% url create-employee %}">Employees</a></li>
