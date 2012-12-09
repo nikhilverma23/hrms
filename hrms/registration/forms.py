@@ -95,9 +95,10 @@ class LeaveForm(forms.Form):
     def __init__(self, request, *args, **kwargs):
         super(LeaveForm, self).__init__(*args, **kwargs)
         if request.method == "GET":
-            qs = UserProfile.objects.filter(is_supervisor=True)
-            choices = [(supervisor.user, unicode(supervisor.user)) \
-                       for supervisor in qs]
+            supervisor = []
+            department_obj = Department.objects.filter(employee=request.user)
+            choices = [(supervisor.supervisor, unicode(supervisor.supervisor)) \
+                       for supervisor in department_obj]
             self.fields['supervisor'].choices = choices
 
     EXTRA_CHOICES = (

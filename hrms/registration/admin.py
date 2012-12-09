@@ -22,12 +22,6 @@ class CompanyAdmin(admin.ModelAdmin):
         
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name','company')
-    #def queryset(self, request):
-    #    qs = super(DepartmentAdmin, self).queryset(request)
-    #    if request.user.is_superuser:
-    #        return qs    #(all the courses)
-    #    else:
-    #        return qs.filter( ????? ) # par
     
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user','key')
