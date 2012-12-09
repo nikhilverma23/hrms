@@ -1,6 +1,13 @@
 {% extends 'base/skeleton.html' %}
 
 {% block content %}
-
-
+    {% if not request.user.is_authenticated %}
+        Your username and Passwords has been successfully updated !
+        <a href="http://{{base_url}}">Click Here</a> and then login for further needs !
+    
+    {% else %}
+        
+        Hi {{request.user.username}} !
+        
+    {% endif %}
 {% endblock %}

@@ -34,7 +34,6 @@ def home(request):
                                 website = cd['website'],
                                 street1 = cd['street1'],
                                 street2 = cd['street2'],
-                                #state = cd['state']
                                 zip_code = cd['post_code'],
                                 country = cd['country'],
                                 phone_number = cd['phone_number'],
@@ -73,15 +72,20 @@ def home(request):
                 print "Form is not valid"
     
         if request.POST['formname'] == 'login':
-                form_login = LoginForm(request.POST)
-                company_detail_form = CompanyForm()
-                if form_login.is_valid():
-                    data = form_login.cleaned_data
-                    user = authenticate(username=data['username'], 
-                                       password=data['password'])
-                    login(request, user)
+            form_login = LoginForm(request.POST)
+            company_detail_form = CompanyForm()
+            if form_login.is_valid():
+                data = form_login.cleaned_data
+                user = authenticate(username=data['username'], 
+                                   password=data['password'])
+                login(request, user)
+                if user.is_staff == True:
                     return HttpResponseRedirect('/registration/summary/')
-    
+                elif user.userprofile_set.values('is_supervisor')[0].get('is_supervisor') == True:
+                    return HttpResponseRedirect('/registration/supervisor_detail/')
+                else:
+                    return HttpResponseRedirect('/registration/employee_detail/')
+
     else:
         company_detail_form = CompanyForm()
         form_login = LoginForm()

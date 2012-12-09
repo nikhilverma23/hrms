@@ -1,6 +1,30 @@
 {% extends 'base/skeleton.html' %}
 
 {% block content %}
+    
+    {% if not request.user.is_authenticated %}
+        Your username and Passwords has been successfully updated !
+        <a href="http://{{base_url}}">Click Here</a> and then login for further needs !
+    
+    {% else %}
+        
+        Hi {{request.user.username}} !
+            <form name="leave_application" action="" method="post" class="form-horizontal">
+		{% csrf_token %}
+		<div>
+			<fieldset>
+				{{form.as_p}}
+			</fieldset>
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<input type='hidden' name='formname' value='leave'>
+				<input type="submit" class='btn btn-primary btn-small' value="Apply Leave &raquo;" text="Sign Up" />
+			</div>
+		</div>
+                
+	</form>
 
+    {% endif %}
 
 {% endblock %}

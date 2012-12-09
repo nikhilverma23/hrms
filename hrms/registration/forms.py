@@ -1,5 +1,5 @@
 from django import forms
-from hrms.registration.models import Category, Country, Department
+from hrms.registration.models import Category, Country, Department, UserProfile
 
 
 class CompanyForm(forms.Form):
@@ -61,9 +61,6 @@ class DepartmentForm(forms.Form):
     """
     
     name = forms.CharField(max_length=255,required=True)
-    #employee = forms.CharField(label="Employee", max_length=255,required=False)
-    #employee_email = forms.EmailField(required=True, initial = "nikhilverma55@gmail.com")
-    #supervisor_username = forms.CharField(label= "Supervisor Username",max_length=255, required=False)
     supervisor_first_name = forms.CharField(max_length=255, required=False)
     supervisor_last_name = forms.CharField(max_length=255, required=False)
     supervisor_email = forms.EmailField(required=True)
@@ -73,6 +70,7 @@ class EmployeeForm(forms.Form):
     """
     Decsribing the Employee
     """
+    
     department = forms.ModelChoiceField(queryset=Department.objects.all(),empty_label=u'Select Department',required=True)
     first_name = forms.CharField(label= "Employee First Name", max_length=255,required=True)
     last_name = forms.CharField(label= "Employee Last Name", max_length=255,required=True)
@@ -89,5 +87,44 @@ class PasswordForm(forms.Form):
     password = forms.CharField(widget=forms.PasswordInput,required=True)
     
     
-   
+class LeaveForm(forms.Form):
+    """
+    Describing the leave application process
+    """
+    
+    def __init__(self, request, *args, **kwargs):
+        super(LeaveForm, self).__init__(*args, **kwargs)
+        if request.method == "GET":
+            qs = UserProfile.objects.filter(is_supervisor=True)
+            choices = [(supervisor.user, unicode(supervisor.user)) \
+                       for supervisor in qs]
+            self.fields['supervisor'].choices = choices
+
+    EXTRA_CHOICES = (
+                        ('Half Day','Half Day'),
+                        ('Full Day','Full Day'),
+                    )
+    
+    
+    SUPERVISOR_CHOICES = (
+                            ('Your Supervisor','Your Supervisor'),
+                        )
+    start_date = forms.DateField()
+    end_date = forms.DateField()
+    leave_count = forms.ChoiceField(
+                                    label="Leave Count",
+                                    choices=EXTRA_CHOICES,
+                                    widget=forms.Select(),
+                                    required=True
+                                    )
+    reason = forms.CharField(widget=forms.Textarea, initial='Valid Reason For Leave')
+    supervisor = forms.ChoiceField(label='Supervisor',\
+                                    choices=SUPERVISOR_CHOICES,
+                                    widget=forms.Select(),
+                                    required = True
+                                    )
+
+
+    
+    
     

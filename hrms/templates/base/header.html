@@ -8,32 +8,32 @@
 	    </a>
 	    <a class="brand" href="{{request.settings.BASE_URL}}">HRMSystems</a>
 	    <div class="nav-collapse collapse">
-	      {% if user.is_authenticated %}
-	      <ul class="nav nav-tabs">
-		<li class="active"><a href="{% url create-department %}">Departments</a></li>
-		<li class="active"><a href="{% url create-employee %}">Employees</a></li>
-		
-		
-	      </ul>
-	      {% endif %}
-	      {% if not user.is_authenticated %}
-	      <form name="login" action="" method="post" class="navbar-form pull-right">
-		{% csrf_token %}
-		{%for field in form_login %}
-			{{field}}
-		{% endfor %}
-		<input type='hidden' name='formname' value='login'>
-		<button type="submit" class="btn">Sign in</button>
-		<a href='#'>
-			<img class='sconnect' src='/media/images/facebook.png'/>
-		</a>
-		<a href='#'>
-			<img class='sconnect' src='/media/images/twitter.png'/>
-		</a>
-		<a href='#'>
-			<img class='sconnect' src='/media/images/google+_02_32x32.png'/>
-		</a>
-	      </form>
+	      {% if request.user.is_authenticated and request.user.is_staff == True %}
+			<ul class="nav nav-tabs">
+			  <li class="active"><a href="{% url create-department %}">Departments</a></li>
+			  <li class="active"><a href="{% url create-employee %}">Employees</a></li>
+			  
+			  
+			</ul>
+		{% endif %}
+	      {% if not request.user.is_authenticated %}
+		<form name="login" action="" method="post" class="navbar-form pull-right">
+		  {% csrf_token %}
+		  {%for field in form_login %}
+			  {{field}}
+		  {% endfor %}
+		  <input type='hidden' name='formname' value='login'>
+		  <button type="submit" class="btn">Sign in</button>
+		  <a href='#'>
+			  <img class='sconnect' src='/media/images/facebook.png'/>
+		  </a>
+		  <a href='#'>
+			  <img class='sconnect' src='/media/images/twitter.png'/>
+		  </a>
+		  <a href='#'>
+			  <img class='sconnect' src='/media/images/google+_02_32x32.png'/>
+		  </a>
+		</form>
 	      {% else %}
 		<div style="float: right; margin-top: 4px; margin-right: 70px;">
 			<div class="btn-group">

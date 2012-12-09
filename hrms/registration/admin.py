@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django import forms
 from hrms.registration.models import *
 
 
@@ -18,11 +19,15 @@ class CompanyAdmin(admin.ModelAdmin):
     list_per_page = 50
     date_hierarchy = 'business_year_start'
 
-#class SupervisorAdmin(admin.ModelAdmin):
-#    list_display = ('name',)
-    
+        
 class DepartmentAdmin(admin.ModelAdmin):
     list_display = ('name','company')
+    #def queryset(self, request):
+    #    qs = super(DepartmentAdmin, self).queryset(request)
+    #    if request.user.is_superuser:
+    #        return qs    #(all the courses)
+    #    else:
+    #        return qs.filter( ????? ) # par
     
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user','key')

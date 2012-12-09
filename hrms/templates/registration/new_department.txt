@@ -1,10 +1,6 @@
 Hi {{name}}
 
 You have been selected as a supervisor of {{department_name}}
-Your login credentials are as follows:-
-
-Username : {{username}}
-Password : {{password}}
 
 Click this Link to change the default credentials:-
 

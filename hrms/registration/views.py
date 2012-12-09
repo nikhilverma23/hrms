@@ -6,6 +6,8 @@ import json
 from datetime import timedelta
 import sys, traceback
 import os, random, string
+import hashlib
+
 #django imports
 from django.shortcuts import render_to_response
 from django.contrib.auth.models import User
@@ -20,9 +22,11 @@ from django.template import RequestContext, loader, Context
 #HRMS imports
 from hrms.home.forms import LoginForm
 from hrms.registration.forms import DepartmentForm, EmployeeForm,\
-PasswordForm
+PasswordForm,LeaveForm
 from hrms.registration.models import Department, UserProfile, Company
 from hrms.settings import BASE_URL
+
+
 #------------------------------------------------------------------------------
 def registration_confirmation(request):
     try:
@@ -91,22 +95,12 @@ def login_user(request, user):
     if hasattr(user, 'backend'):
         return login(request, user)
     
-#------------------------------------------------------------------------------    
-def set_password(raw_password):
-    import random
-    algo = 'sha1'
-    salt = get_hexdigest(algo, str(random.random()), str(random.random()))[:5]
-    hsh = get_hexdigest(algo, salt, raw_password)
-    self.password = '%s$%s$%s' % (algo, salt, hsh)
-#------------------------------------------------------------------------------    
-import hashlib
-
+#------------------------------------------------------------------------------
 def register_user(data):
     """
     This method is used to register a new user and create a user profile.
     """
     password = hashlib.sha1(data['confirm_password']).hexdigest()
-    #password = set_password(data['confirm_password'])
     new_user = User(username=data['email'], email=data['email'], 
                     is_staff=True
                     )
@@ -117,22 +111,12 @@ def register_user(data):
     new_user.email = data['email']
     new_user.is_locked = True
     new_user.save()
-    #
-    #somemodel_ct = ContentType.objects.get(app_label='auth', model='user')
-    #
-    #can_view = Permission(name='Can View', codename='can_view_something',
-    #                       content_type=somemodel_ct)
-    #can_view.save()
-    #
-    #can_modify = Permission(name='Can Modify', codename='can_modify_something',
-    #                       content_type=somemodel_ct)
-    #can_modify.save()
+    #saving into User Profile Table
     new_profile = new_user.profile
     profile = new_user.profile
     key = uuid.uuid4().__str__()
     profile.key = key
     profile.save()
-    #new_profile.save()
     if new_user and profile:
         return new_user
     else:
@@ -140,6 +124,9 @@ def register_user(data):
     
 #-------------------------------------------------------------------------------
 def login(request):
+    """
+    Login Form
+    """
     login_form = LoginForm()
     return render_to_response('registration/login.html',
                               {'login_form' : login_form},
@@ -148,22 +135,27 @@ def login(request):
 
 #-------------------------------------------------------------------------------
 def logout_view(request):
+    """
+    Logout from browser
+    """
     logout(request)
     return HttpResponseRedirect('/')
 #-------------------------------------------------------------------------------
 def login_error(request):
+    """
+    In case some verification failed
+    """
     return HttpResponseRedirect('registration/login_error.html')
 #-------------------------------------------------------------------------------
-
 def create_department(request):
+    """
+    Adding Department
+    """
     if request.method =="POST":
         department_form = DepartmentForm(request.POST)
-        
         if department_form.is_valid():
             cd = department_form.cleaned_data
             print "department form is invalid"
-            
-            
         else:
             department_counter = 0
             
@@ -172,8 +164,6 @@ def create_department(request):
             supervisor_last_name_list = request.POST.getlist('supervisor_last_name[]')
             supervisor_email_list = request.POST.getlist('supervisor_email[]')
             for department_name in request.POST.getlist('name[]'):
-                
-            
                 # generating random username
                 N = 8
                 random_username = ''.join(random.choice(string.ascii_uppercase + string.digits) for x in range(N))
@@ -190,9 +180,9 @@ def create_department(request):
                             last_name = supervisor_last_name_list[department_counter],
                             email = supervisor_email_list[department_counter],
                             )
-                user_obj.password = random_password
+                user_obj.set_password(random_password)
                 user_obj.save()
-                
+                #saving in UserProfile object
                 new_profile = user_obj.profile
                 profile = user_obj.profile
                 key = uuid.uuid4().__str__()
@@ -210,7 +200,7 @@ def create_department(request):
                                     company = company_obj,
                                     supervisor= user_obj
                                 )
-                
+                # Now Send them the email
                 subject = "Supervisor of %s department" % department_obj[0].name
                  # Send them an email.
                 t = loader.get_template('registration/new_department.txt')
@@ -243,9 +233,11 @@ def create_department(request):
                                'department_form':department_form},
                               context_instance = RequestContext(request)
                               )
-    
-    
+#---------------------------------------------------------------------------    
 def create_employee(request):
+    """
+    Adding employees
+    """
     if request.method == "POST":
         employee_form = EmployeeForm(request.POST)
         
@@ -270,41 +262,38 @@ def create_employee(request):
                 random.seed = (os.urandom(1024))
                 random_password = ''.join(random.choice(chars) for i in range(N))
                 random_password = str(random_password)
-                
+                # Adding in User Table
                 user_obj =  User(
                                 username = random_username,
                                 first_name = first_name_list[employment_counter],
                                 last_name = last_name_list[employment_counter],
                                 email = employee_email_list[employment_counter],
                             )
-                
-               
-                user_obj.password = random_password
+                user_obj.set_password(random_password)
                 user_obj.save()
-                company_obj = Company.objects.get(email=request.user.username)
-                department_obj = Department.objects.filter(company=company_obj)
-                for department in department_obj:
-                    department.employee.add(user_obj.id)
                 
+                #Adding into department 
                 
-                
-                 # Send them an email.
+                department_obj = Department.objects.get(id=employee_department_list[employment_counter])
+                department_obj.employee.add(user_obj.id)
+                    
+                # Send them an email.
                 t = loader.get_template('registration/new_employee.txt')
                 full_name = user_obj.first_name + " " + user_obj.last_name
                 c = Context({
                     'id':user_obj.id,
-                    'department_name':department_obj[0].name,
+                    'department_name':department_obj.name,
                     'name':full_name,
                     'username':user_obj.username,
                     'password':random_password,
                     'base_url':BASE_URL,
                 })
                 msg = t.render(c)
-                subject = "Supervisor of %s department" % department_obj[0].name
+                subject = "Employer of %s department" % department_obj.name
                 send_mail(
                     subject,
                     msg,
-                    'HRMS <noreply@hrms.com>',
+                    'HRMS <noreplyhr@hrms.com>',
                     [employee_email_list[employment_counter]],
                     fail_silently=True
                 )
@@ -318,6 +307,7 @@ def create_employee(request):
         
         employee_form = EmployeeForm()
         company_obj = Company.objects.get(email=request.user.username)
+        # Listing the department created by the company itself
         department = company_obj.department_set.all()
             
     return render_to_response('registration/create_employee.html',
@@ -325,8 +315,8 @@ def create_employee(request):
                                'department':department,
                                'employee_form':employee_form},
                               context_instance = RequestContext(request)
-                              )
-
+                            )
+#---------------------------------------------------------------------------
 def summary(request):
     """
     This will tell the complete summary in a Table
@@ -342,56 +332,72 @@ def summary(request):
                                 },
                                 context_instance = RequestContext(request)
                               )
-    
+#---------------------------------------------------------------------------
 def password_reset(request):
     """
     Change password for logged in user
     """
-    
+
     if request.method == "POST":
         password_form = PasswordForm(request.POST)
         if password_form.is_valid():
             cd = password_form.cleaned_data
             user_obj = User.objects.get(id=request.GET['id'])
             user_obj.username = cd['username']
-            user_obj.password = cd['password']
+            user_obj.set_password(cd['password'])
             user_obj.save()
-            userprofile_obj = UserProfile.objects.get(username=username)
-            if userprofile_obj.is_supervisor:
-                return HttpResponseRedirect('registration/supervisor_detail/')
+            new_profile = user_obj.profile
+            profile = user_obj.profile
+            key = uuid.uuid4().__str__()
+            profile.key = key
+            profile.first_name = user_obj.first_name
+            profile.last_name = user_obj.last_name
+            profile.email = user_obj.email
+            profile.save()
+            userprofile_obj = UserProfile.objects.get(user=user_obj)
+            if userprofile_obj.is_supervisor == True:
+                return HttpResponseRedirect('/registration/supervisor_detail/')
             else:
-                return HttpResponseRedirect('registration/employee_detail/')
+                return HttpResponseRedirect('/registration/employee_detail/')
         else:
             print "Default password Form is invalid !"
             
     else:
         password_form = PasswordForm()
             
-    
-    
     return render_to_response('registration/password_reset_form.html',
-                                {'request':request,
-                                 'password_form':password_form,
+                                {
+                                'request':request,
+                                'password_form':password_form,
                                 },
                                 context_instance = RequestContext(request)
                               )
 
-
+#---------------------------------------------------------------------------
 def supervisor_detail(request):
     """
     Describe the detail of leaves to employees.
     """
 
     return render_to_response('registration/supervisor_detail.html',
-                                    {'request':request},
+                                    {'request':request,'base_url':BASE_URL},
                                     context_instance = RequestContext(request)
                                 )
-
+#---------------------------------------------------------------------------
 def employee_detail(request):
     """
     Leads to Leave application form because they will not have any rights.
     """
+    form = LeaveForm(request)
+    if request.method == "POST":
+        leave_form = LeaveForm(request.POST)
+        if leave_form.is_valid():
+            cd = leave_form.cleaned_data
+        else:
+            print "Leave Application Form is invalid "
+    data = dict(form=form,request=request,base_url=BASE_URL)
     return render_to_response('registration/employee_detail.html',
-                                    {'request':request},
-                                    context_instance = RequestContext(request)
+                                data,
+                                context_instance = RequestContext(request)
                                 )
+#---------------------------------------------------------------------------
