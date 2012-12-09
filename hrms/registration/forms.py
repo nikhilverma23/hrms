@@ -97,8 +97,6 @@ class LeaveForm(forms.Form):
         if request.method == "GET":
             supervisor = []
             department_obj = Department.objects.filter(employee=request.user)
-            for d_obj in department_obj:
-                d_obj.supervisor
             choices = [(supervisor.supervisor, unicode(supervisor.supervisor)) \
                        for supervisor in department_obj]
             self.fields['supervisor'].choices = choices
