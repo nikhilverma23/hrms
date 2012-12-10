@@ -11,7 +11,7 @@ class CompanyForm(forms.Form):
     title = forms.CharField(label="Company's Name", max_length=1024,required=True, initial="XYZ PVT. LTD")
     password = forms.CharField(widget=forms.PasswordInput)
     confirm_password = forms.CharField(widget=forms.PasswordInput)
-    indutry_type = forms.ModelChoiceField(queryset=Category.objects.all()\
+    industry_type = forms.ModelChoiceField(queryset=Category.objects.all()\
                                           ,required=False)
     website = forms.URLField(required=True)
     description = forms.CharField(widget=forms.Textarea, initial='Describe omething about the company')
@@ -92,37 +92,52 @@ class LeaveForm(forms.Form):
     Describing the leave application process
     """
     
-    def __init__(self, request, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(LeaveForm, self).__init__(*args, **kwargs)
-        if request.method == "GET":
-            supervisor = []
-            department_obj = Department.objects.filter(employee=request.user)
-            choices = [(supervisor.supervisor, unicode(supervisor.supervisor)) \
-                       for supervisor in department_obj]
-            self.fields['supervisor'].choices = choices
+        self.fields['start_date'].widget.attrs['class'] = "datepicker"
+        self.fields['end_date'].widget.attrs['class'] = "datepicker"
+        
 
     EXTRA_CHOICES = (
-                        ('Half Day','Half Day'),
-                        ('Full Day','Full Day'),
+                        ('0','Select Leave length'),
+                        ('1','Half Day'),
+                        ('2','Full Day'),
                     )
     
+    LEAVE_TYPE_CHOICES =    (
+                                
+                                ('0','Select Leave Type'),
+                                ('Sick Leave','Sick Leave'),
+                                ('Casual Leave','Casual Leave'),
+                                ('Leave without Pay','Leave without Pay'),
+            
+                            )
     
-    SUPERVISOR_CHOICES = (
-                            ('Your Supervisor','Your Supervisor'),
-                        )
+    qs=UserProfile.objects.filter(is_supervisor=True)
+    SUPERVISOR_CHOICES = [(supervisor.user.id, unicode(supervisor.user.username)) for supervisor in qs]
     start_date = forms.DateField()
     end_date = forms.DateField()
+    type_of_leave = forms.ChoiceField(
+                                    label="Leave Type",
+                                    choices=LEAVE_TYPE_CHOICES,
+                                    widget=forms.Select(),
+                                    required=True
+                                    )
     leave_count = forms.ChoiceField(
                                     label="Leave Count",
                                     choices=EXTRA_CHOICES,
                                     widget=forms.Select(),
                                     required=True
                                     )
-    reason = forms.CharField(widget=forms.Textarea, initial='Valid Reason For Leave')
-    supervisor = forms.ChoiceField(label='Supervisor',\
+    reason = forms.CharField(
+                            widget=forms.Textarea,
+                            initial='Valid Reason For Leave',
+                            required=True
+                            )
+    supervisor = forms.ChoiceField(label="Supervisor",
                                     choices=SUPERVISOR_CHOICES,
-                                    widget=forms.Select(),
-                                    required = True
+                                    required = True,
+                                    widget=forms.Select()
                                     )
 
 

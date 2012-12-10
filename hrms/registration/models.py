@@ -120,11 +120,13 @@ class Leave(models.Model):
     start_date = models.DateField()
     end_date = models.DateField()
     user = models.ForeignKey(User)
-    department = models.ForeignKey(Department)
+    department = models.ManyToManyField(Department,null=True,blank=True)
     leave_count = models.CharField(max_length=5,null=True,blank=True)
+    reason = models.TextField(null=True,blank=True)
     
     def __unicode__(self):
-        return self.type_of_leave
+        leave_count = str(self.leave_count)
+        return leave_count
     
     
 class RestrictedDay(models.Model):

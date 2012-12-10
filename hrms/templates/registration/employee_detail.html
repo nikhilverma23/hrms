@@ -1,20 +1,29 @@
 {% extends 'base/skeleton.html' %}
 
 {% block content %}
-    
+    <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+    <script src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
     {% if not request.user.is_authenticated %}
         Your username and Passwords has been successfully updated !
         <a href="http://{{base_url}}">Click Here</a> and then login for further needs !
     
     {% else %}
+        {% if leave_form.errors %}
+    	<div class="error_message">There were errors in your submission.</div>
+	{% endif %}
         
-        Hi {{request.user.username}} !
+        <h2>Hi {{request.user.username}} !</h2>
+            
+            <h4>Leave Application form</h4>
             <form name="leave_application" action="" method="post" class="form-horizontal">
 		{% csrf_token %}
 		<div>
 			<fieldset>
-				{{form.as_p}}
-			</fieldset>
+                            
+				{{leave_form.as_p}}
+                                
+                    
+                        </fieldset>
 		</div>
 		<div class="control-group">
 			<div class="controls">
@@ -26,5 +35,15 @@
 	</form>
 
     {% endif %}
+    
+
+<script type="text/javascript">
+    $('.datepicker').datepicker({
+                dateFormat:"yy-mm-dd",
+		showOn: "button",
+		buttonImage: "/static/images/calendar_icon.png",
+		buttonImageOnly: true
+    });
+</script>
 
 {% endblock %}

@@ -37,7 +37,7 @@ def home(request):
                                 zip_code = cd['post_code'],
                                 country = cd['country'],
                                 phone_number = cd['phone_number'],
-                                category = cd['indutry_type'],
+                                category = cd['industry_type'],
                                 business_year_start = cd['business_year_start'],
                                 business_year_end = cd['business_year_end'],
                                 description = cd['description'],

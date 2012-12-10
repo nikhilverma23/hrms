@@ -28,7 +28,7 @@ class UserProfileAdmin(admin.ModelAdmin):
     
     
 class LeaveAdmin(admin.ModelAdmin):
-    list_display = ('type_of_leave',)
+    list_display = ('user','start_date','end_date','type_of_leave')
     
 class RestrictedDayAdmin(admin.ModelAdmin):
     list_display = ('title','restriction_day_date')

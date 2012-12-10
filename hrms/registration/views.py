@@ -23,7 +23,8 @@ from django.template import RequestContext, loader, Context
 from hrms.home.forms import LoginForm
 from hrms.registration.forms import DepartmentForm, EmployeeForm,\
 PasswordForm,LeaveForm
-from hrms.registration.models import Department, UserProfile, Company
+from hrms.registration.models import Department, UserProfile,\
+Company, Leave
 from hrms.settings import BASE_URL
 
 
@@ -182,6 +183,15 @@ def create_department(request):
                             )
                 user_obj.set_password(random_password)
                 user_obj.save()
+                
+                # Taking out the companydetails for filling
+                # department object
+                company_obj = Company.objects.get(email=request.user.username)
+                department_obj = Department.objects.get_or_create(
+                                    name=department_name_list[department_counter],
+                                    company = company_obj,
+                                    supervisor= user_obj
+                                )
                 #saving in UserProfile object
                 new_profile = user_obj.profile
                 profile = user_obj.profile
@@ -191,15 +201,8 @@ def create_department(request):
                 profile.last_name = user_obj.last_name
                 profile.email = user_obj.email
                 profile.is_supervisor = True
+                #profile.department.add(department_name_list[department_counter])
                 profile.save()
-                # Taking out the companydetails for filling
-                # department object
-                company_obj = Company.objects.get(email=request.user.username)
-                department_obj = Department.objects.get_or_create(
-                                    name=department_name_list[department_counter],
-                                    company = company_obj,
-                                    supervisor= user_obj
-                                )
                 # Now Send them the email
                 subject = "Supervisor of %s department" % department_obj[0].name
                  # Send them an email.
@@ -273,6 +276,12 @@ def create_employee(request):
                             )
                 user_obj.set_password(random_password)
                 user_obj.save()
+                #saving in UserProfile object to make sure
+                #department gets saved there !
+                new_profile = user_obj.profile
+                profile = user_obj.profile
+                profile.department.add(employee_department_list[employment_counter])
+                profile.save()
                 
                 #Adding into department 
                 
@@ -392,16 +401,67 @@ def employee_detail(request):
     """
     Leads to Leave application form because they will not have any rights.
     """
-    form = LeaveForm(request)
+
     if request.method == "POST":
         leave_form = LeaveForm(request.POST)
         if leave_form.is_valid():
             cd = leave_form.cleaned_data
+            # Picking all department of user
+            userprofile_obj = UserProfile.objects.get(user=request.user)
+            department_list = userprofile_obj.department.all()
+            leave_obj = Leave(
+                        type_of_leave = cd['type_of_leave'],
+                        start_date = cd['start_date'],
+                        end_date = cd['end_date'],
+                        user = request.user,
+                        reason=cd['reason']
+                        )
+            leave_obj.save()
+            # finally adding those departments to leave_obj
+            for department in department_list:
+                leave_obj.department.add(department)
+            
+            # Send email to supervisor
+            supervisor = User.objects.get(id=cd['supervisor'])
+            t = loader.get_template('registration/employee_leave.txt')
+            username = request.user.username
+            c = Context({
+                'id':request.user.id,
+                'department_name':department_list[0].name,
+                'username':username,
+                'supervisor':supervisor.username,
+                'reason':cd['reason'],
+                'start_date':cd['start_date'],
+                'end_date':cd['end_date'],
+                'type_of_leave':cd['type_of_leave']
+                
+            })
+            msg = t.render(c)
+            subject = "Leave Application from %s department" % userprofile_obj.department.all()[0].name
+
+            send_mail(
+                subject,
+                msg,
+                request.user.email,
+                [userprofile_obj.department.all()[0].supervisor.email],
+                fail_silently=True
+            )
+            return render_to_response(
+                                        'registration/leave_approval.html',
+                                        {},
+                                        context_instance = RequestContext(request)
+                                       )
+                
         else:
             print "Leave Application Form is invalid "
-    data = dict(form=form,request=request,base_url=BASE_URL)
+    else:
+        leave_form = LeaveForm()
     return render_to_response('registration/employee_detail.html',
-                                data,
+                                {
+                                 'leave_form':leave_form,
+                                 'request':request,
+                                 'base_url':BASE_URL
+                                },
                                 context_instance = RequestContext(request)
                                 )
 #---------------------------------------------------------------------------
