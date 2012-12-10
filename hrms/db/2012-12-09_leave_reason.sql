@@ -1,0 +1,1 @@
+ALTER TABLE "registration_leave" ADD COLUMN "reason" text;
