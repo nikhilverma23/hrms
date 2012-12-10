@@ -3,15 +3,22 @@
 {% block content %}
 
 <table border="1" cellpadding="5" cellspacing="5">
+<tr>
+    <td>Company Name</td>
+    <td>Department Name</td>
+    <td>Supervisors Name</td>
+    <td>Employees</td>
+</tr>
 {% for department in department_obj %}
     <tr>
         <td>{{company_obj}}</td>
         <td>{{department}}</td>
-        <td>{{department.supervisor.email}}</td>
+        <td>{{department.supervisor}}</td>
         <td>&nbsp;</td>
     </tr>
     {% for emp_name in department.employee.all %}
         <tr>
+            
             <td>&nbsp;</td>
             <td>&nbsp;</td>
             <td>&nbsp;</td>
@@ -20,4 +27,7 @@
     {% endfor %}
 {% endfor %}
 </table>
+<a href="/registration/export_company_data/">Export Data</a>
+
+
 {% endblock %}

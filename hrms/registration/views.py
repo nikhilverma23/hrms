@@ -5,13 +5,14 @@ import datetime
 import json
 from datetime import timedelta
 import sys, traceback
-import os, random, string
+import random, string
 import hashlib
+import csv
 
 #django imports
 from django.shortcuts import render_to_response
 from django.contrib.auth.models import User
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.contrib.auth import load_backend, login, logout
 from django.conf import settings
 from django.contrib.contenttypes.models import ContentType
@@ -465,3 +466,36 @@ def employee_detail(request):
                                 context_instance = RequestContext(request)
                                 )
 #---------------------------------------------------------------------------
+
+def export_company_data(request):
+    company_obj = Company.objects.get(email=request.user)
+    department_obj = Department.objects.filter(company=company_obj)
+    response = HttpResponse(mimetype='text/csv')
+    response['Content-Disposition'] = 'attachment; filename=\
+    %s-%s.csv' % ( company_obj.name, datetime.datetime.now().date())
+    writer = csv.writer(response)
+    row_header_values = [
+                        'Company Name',
+                        'Department Name',
+                        'Supervisor',
+                        'Employee',
+                        ]
+    # Output the headers first
+    writer.writerow(row_header_values)
+    
+    for department_details in department_obj:
+        
+        row_data =  [
+                        company_obj.name,
+                        department_details.name,
+                        department_details.supervisor.username,
+                        [employee.username for employee in department_details.employee.all()]
+                        
+                    ]
+    # preparing the export    
+    export_dict = dict(zip(row_header_values,row_data))
+    # Matching the values with headers
+    final_row_data = [export_dict[key] for key in row_header_values]     
+    writer.writerow(final_row_data)
+    return response
+    
