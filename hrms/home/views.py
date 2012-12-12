@@ -80,18 +80,22 @@ def home(request):
                                    password=data['password'])
                 login(request, user)
                 if user.is_staff == True:
-                    return HttpResponseRedirect('/registration/summary/')
+                    return HttpResponseRedirect('/registration/summary/?user=company')
                 elif user.userprofile_set.values('is_supervisor')[0].get('is_supervisor') == True:
                     return HttpResponseRedirect('/registration/supervisor_detail/')
                 else:
-                    return HttpResponseRedirect('/registration/employee_detail/')
+                    return HttpResponseRedirect('/registration/employee_homepage/')
 
     else:
         company_detail_form = CompanyForm()
         form_login = LoginForm()
     return render_to_response(
                               'home/home_page.html',
-                              {'company_detail_form':company_detail_form,
-                               'form_login' : form_login},
+                              {
+                                'company_detail_form':company_detail_form,
+                               'form_login' : form_login,
+                               'request':request,
+                               'base_url':BASE_URL
+                               },
                               context_instance = RequestContext(request)
                               )

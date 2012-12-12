@@ -1,5 +1,6 @@
 from django import forms
-from hrms.registration.models import Category, Country, Department, UserProfile
+from hrms.registration.models import Category, Country, Department,\
+UserProfile, LeaveType
 
 
 class CompanyForm(forms.Form):
@@ -104,23 +105,14 @@ class LeaveForm(forms.Form):
                         ('2','Full Day'),
                     )
     
-    LEAVE_TYPE_CHOICES =    (
-                                
-                                ('0','Select Leave Type'),
-                                ('Sick Leave','Sick Leave'),
-                                ('Casual Leave','Casual Leave'),
-                                ('Leave without Pay','Leave without Pay'),
-            
-                            )
     
     qs=UserProfile.objects.filter(is_supervisor=True)
     SUPERVISOR_CHOICES = [(supervisor.user.id, unicode(supervisor.user.username)) for supervisor in qs]
     start_date = forms.DateField()
     end_date = forms.DateField()
-    type_of_leave = forms.ChoiceField(
-                                    label="Leave Type",
-                                    choices=LEAVE_TYPE_CHOICES,
-                                    widget=forms.Select(),
+    type_of_leave = forms.ModelChoiceField(
+                                    queryset = LeaveType.objects.all(),
+                                    empty_label="Select Leave Type",
                                     required=True
                                     )
     leave_count = forms.ChoiceField(
@@ -139,6 +131,20 @@ class LeaveForm(forms.Form):
                                     required = True,
                                     widget=forms.Select()
                                     )
+    
+class UserProfileForm(forms.Form):
+    """
+    adding user profile details
+    """
+    first_name = forms.CharField(max_length=80)
+    last_name = forms.CharField(max_length=80)
+    email = forms.EmailField()
+    street1 = forms.CharField(max_length=255,required=False)
+    street2 = forms.CharField(max_length=255,required=False)
+    post_code = forms.CharField(max_length=255,required=False)
+    country = forms.ModelChoiceField(queryset=Country.objects.all(),
+                                     required=True)
+
 
 
     

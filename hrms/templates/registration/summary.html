@@ -27,7 +27,38 @@
     {% endfor %}
 {% endfor %}
 </table>
-<a href="/registration/export_company_data/">Export Data</a>
+<div style="margin-top: 20px;">
+    <a class="btn btn-success" href="/registration/export_company_data/">Export Data</a>
+</div>
+
+
+
+<div>
+    <h5>You have recieved {{leave_obj.count}} leave application request.</h5>
+</div>
+    {% if leave_obj.count >= 1 %}
+        <table border="1" cellpadding="5" cellspacing="5">
+            <tr>
+                <td>Leave Recieved From</td>
+                <td>Leave From</td>
+                <td>Leave To</td>
+                <td>Leave Type</td>
+                <td>Leave Reason</td>
+            </tr>
+                {% for leave in leave_obj %}  
+                <tr>
+                    <td><a href="/registration/leave_detail/?id={{leave.id}}">{{leave.user.username}}</a></td>
+                    <td>{{leave.start_date}}</td>
+                    <td>{{leave.end_date}}</td>
+                    <td>{{leave.type_of_leave}}</td>
+                    <td>{{leave.reason}}</td>
+                </tr>
+                {% endfor %}
+                
+            
+        </table>
+    {% endif %}    
+               
 
 
 {% endblock %}

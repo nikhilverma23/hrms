@@ -23,7 +23,7 @@ from django.template import RequestContext, loader, Context
 #HRMS imports
 from hrms.home.forms import LoginForm
 from hrms.registration.forms import DepartmentForm, EmployeeForm,\
-PasswordForm,LeaveForm
+PasswordForm ,LeaveForm ,UserProfileForm 
 from hrms.registration.models import Department, UserProfile,\
 Company, Leave
 from hrms.settings import BASE_URL
@@ -118,6 +118,7 @@ def register_user(data):
     profile = new_user.profile
     key = uuid.uuid4().__str__()
     profile.key = key
+    profile.is_supervisor = True
     profile.save()
     if new_user and profile:
         return new_user
@@ -335,138 +336,33 @@ def summary(request):
     """
     This will tell the complete summary in a Table
     """
- 
+    
+    leave_user = []
     company_obj = Company.objects.get(email=request.user)
     department_obj = Department.objects.filter(company=company_obj)
+    for department in department_obj:
+        all_emp = department.employee.all()
+        supervisor = department.supervisor
+        for emp in all_emp:
+            leave_user.append(emp)
+        leave_user.append(supervisor)
+    leave_obj = Leave.objects.filter(supervisor=request.user,status=False)
+    
+    #for emp_leave in leave_user:
+    #    leave_obj = Leave.objects.filter(user=emp_leave)
+        
     
     return render_to_response('registration/summary.html',
                                 {'request':request,
                                 'company_obj':company_obj,
-                                'department_obj':department_obj
+                                'department_obj':department_obj,
+                                'leave_obj':leave_obj,
+                                'base_url':BASE_URL,
+                                'active':'summary'
                                 },
                                 context_instance = RequestContext(request)
                               )
-#---------------------------------------------------------------------------
-def password_reset(request):
-    """
-    Change password for logged in user
-    """
-
-    if request.method == "POST":
-        password_form = PasswordForm(request.POST)
-        if password_form.is_valid():
-            cd = password_form.cleaned_data
-            user_obj = User.objects.get(id=request.GET['id'])
-            user_obj.username = cd['username']
-            user_obj.set_password(cd['password'])
-            user_obj.save()
-            new_profile = user_obj.profile
-            profile = user_obj.profile
-            key = uuid.uuid4().__str__()
-            profile.key = key
-            profile.first_name = user_obj.first_name
-            profile.last_name = user_obj.last_name
-            profile.email = user_obj.email
-            profile.save()
-            userprofile_obj = UserProfile.objects.get(user=user_obj)
-            if userprofile_obj.is_supervisor == True:
-                return HttpResponseRedirect('/registration/supervisor_detail/')
-            else:
-                return HttpResponseRedirect('/registration/employee_detail/')
-        else:
-            print "Default password Form is invalid !"
-            
-    else:
-        password_form = PasswordForm()
-            
-    return render_to_response('registration/password_reset_form.html',
-                                {
-                                'request':request,
-                                'password_form':password_form,
-                                },
-                                context_instance = RequestContext(request)
-                              )
-
-#---------------------------------------------------------------------------
-def supervisor_detail(request):
-    """
-    Describe the detail of leaves to employees.
-    """
-
-    return render_to_response('registration/supervisor_detail.html',
-                                    {'request':request,'base_url':BASE_URL},
-                                    context_instance = RequestContext(request)
-                                )
-#---------------------------------------------------------------------------
-def employee_detail(request):
-    """
-    Leads to Leave application form because they will not have any rights.
-    """
-
-    if request.method == "POST":
-        leave_form = LeaveForm(request.POST)
-        if leave_form.is_valid():
-            cd = leave_form.cleaned_data
-            # Picking all department of user
-            userprofile_obj = UserProfile.objects.get(user=request.user)
-            department_list = userprofile_obj.department.all()
-            leave_obj = Leave(
-                        type_of_leave = cd['type_of_leave'],
-                        start_date = cd['start_date'],
-                        end_date = cd['end_date'],
-                        user = request.user,
-                        reason=cd['reason']
-                        )
-            leave_obj.save()
-            # finally adding those departments to leave_obj
-            for department in department_list:
-                leave_obj.department.add(department)
-            
-            # Send email to supervisor
-            supervisor = User.objects.get(id=cd['supervisor'])
-            t = loader.get_template('registration/employee_leave.txt')
-            username = request.user.username
-            c = Context({
-                'id':request.user.id,
-                'department_name':department_list[0].name,
-                'username':username,
-                'supervisor':supervisor.username,
-                'reason':cd['reason'],
-                'start_date':cd['start_date'],
-                'end_date':cd['end_date'],
-                'type_of_leave':cd['type_of_leave']
-                
-            })
-            msg = t.render(c)
-            subject = "Leave Application from %s department" % userprofile_obj.department.all()[0].name
-
-            send_mail(
-                subject,
-                msg,
-                request.user.email,
-                [userprofile_obj.department.all()[0].supervisor.email],
-                fail_silently=True
-            )
-            return render_to_response(
-                                        'registration/leave_approval.html',
-                                        {},
-                                        context_instance = RequestContext(request)
-                                       )
-                
-        else:
-            print "Leave Application Form is invalid "
-    else:
-        leave_form = LeaveForm()
-    return render_to_response('registration/employee_detail.html',
-                                {
-                                 'leave_form':leave_form,
-                                 'request':request,
-                                 'base_url':BASE_URL
-                                },
-                                context_instance = RequestContext(request)
-                                )
-#---------------------------------------------------------------------------
-
+#---------------------------------------------------------------------------    
 def export_company_data(request):
     company_obj = Company.objects.get(email=request.user)
     department_obj = Department.objects.filter(company=company_obj)
@@ -498,4 +394,402 @@ def export_company_data(request):
     final_row_data = [export_dict[key] for key in row_header_values]     
     writer.writerow(final_row_data)
     return response
+
+#---------------------Company Section Ends-----------------------------------
+#---------------------Supervisor section---------------------------------------
+def supervisor_detail(request):
+    """
+    Describe the detail of leaves to employees.
+    """
+
+    employee_list = []
+    if request.GET.get('id'):
+        user_obj = User.objects.get(id=request.GET['id'])
+        department_obj = Department.objects.filter(supervisor=user_obj)
+        
+    else:
+        department_obj = Department.objects.filter(supervisor=request.user)
+    for d_obj in department_obj:
+        employee_obj_list  = d_obj.employee.all()
+    for employee_name in employee_obj_list:
+        leave_obj = Leave.objects.filter(user=employee_name,status=False)
+        
+        
+    return render_to_response(
+                                'registration/supervisor_detail.html',
+                                {
+                                    'request':request,'base_url':BASE_URL,
+                                    'leave_obj':leave_obj
+                                },
+                                
+                                context_instance = RequestContext(request)
+                                )
+#---------------------------------------------------------------------------
+def supervisor_profile(request):
+    """
+    Leads to edit and update the supervisor profile.
+    """
     
+    department_obj = Department.objects.get(supervisor=request.user)
+    if request.method == "POST":
+        
+        userprofile_form = UserProfileForm(request.POST)
+        if userprofile_form.is_valid():
+            cd = userprofile_form.cleaned_data
+            userprofile_obj = UserProfile.objects.get(user=request.user)
+            userprofile_obj.first_name = cd['first_name']
+            userprofile_obj.last_name = cd['last_name']
+            userprofile_obj.email = cd['email']
+            userprofile_obj.street1 = cd['street1']
+            userprofile_obj.street2 = cd['street2']
+            userprofile_obj.zip_code = cd['post_code']
+            userprofile_obj.country = cd['country']
+            userprofile_obj.company = department_obj.company
+            userprofile_obj.save()
+            user_obj = User.objects.get(id=request.user.id)
+            user_obj.first_name = userprofile_obj.first_name
+            user_obj.last_name = userprofile_obj.last_name
+            user_obj.email = userprofile_obj.email 
+            return HttpResponseRedirect('/registration/supervisor_leave/')
+        else:
+            print "UserProfileForm is invalid"
+    else:
+        userprofile_form = UserProfileForm()
+        try:
+            userprofile_obj = UserProfile.objects.get(user=request.user)
+            userprofile_form.fields['first_name'].initial = userprofile_obj.first_name
+            userprofile_form.fields['last_name'].initial = userprofile_obj.last_name
+            userprofile_form.fields['email'].initial = userprofile_obj.email
+            userprofile_form.fields['street1'].initial = userprofile_obj.street1
+            userprofile_form.fields['street2'].initial = userprofile_obj.street2
+            userprofile_form.fields['post_code'].initial = userprofile_obj.zip_code
+            userprofile_form.fields['country'].initial = userprofile_obj.country
+            
+        except:
+            pass
+    return render_to_response(
+                                'registration/supervisor_profile.html',
+                                {
+                                    'request':request,
+                                    'department_obj':department_obj,
+                                    'userprofile_form':userprofile_form
+                                 },
+                                context_instance = RequestContext(request)
+                               ) 
+#---------------------------------------------------------------------------
+def supervisor_leave(request):
+    """
+    Supervisor is applying leave and this will directly
+    go to company owner email who created the department.
+    """
+
+    if request.method == "POST":
+        leave_form = LeaveForm(request.POST)
+        if leave_form.is_valid():
+            cd = leave_form.cleaned_data
+            # Picking all department of user
+            userprofile_obj = UserProfile.objects.get(user=request.user)
+            department_list = userprofile_obj.department.all()
+            supervisor = User.objects.get(id=cd['supervisor'])
+            leave_obj = Leave(
+                        type_of_leave = cd['type_of_leave'],
+                        start_date = cd['start_date'],
+                        end_date = cd['end_date'],
+                        user = request.user,
+                        reason = cd['reason'],
+                        supervisor=supervisor
+                        )
+            leave_obj.save()
+            
+            # finally adding those departments to leave_obj
+            for department in department_list:
+                leave_obj.department.add(department)
+            ## Send email to supervisor
+            supervisor = User.objects.get(id=cd['supervisor'])
+            t = loader.get_template('registration/supervisor_leave.txt')
+            username = request.user.username
+            c = Context({
+                'id':request.user.id,
+                #'department_name':department_list[0].name,
+                'username':username,
+                'supervisor':leave_obj.supervisor,
+                'reason':cd['reason'],
+                'start_date':cd['start_date'],
+                'end_date':cd['end_date'],
+                'type_of_leave':cd['type_of_leave']
+                
+            })
+            msg = t.render(c)
+            subject = "Leave Application"
+            
+            send_mail(
+                subject,
+                msg,
+                request.user.email,
+                [supervisor.email],
+                fail_silently=True
+            )
+            return render_to_response(
+                                        'registration/leave_approval.html',
+                                        {'request':request},
+                                        context_instance = RequestContext(request)
+                                       )
+                
+        else:
+            print "Leave Application Form is invalid "
+    else:
+        leave_form = LeaveForm()
+    return render_to_response('registration/supervisor_leave.html',
+                                {
+                                 'leave_form':leave_form,
+                                 'request':request,
+                                 'base_url':BASE_URL,
+                                 'active':'leave'
+                                },
+                                context_instance = RequestContext(request)
+                            )
+#-------------------Supervisor Section Ends------------------------------------
+
+#-------------------Employer Section Start------------------------------------
+def employee_homepage(request):
+    """
+    displays the employer first page
+    """
+    department_obj = Department.objects.get(employee=request.user)
+    return render_to_response(
+                                'registration/emp_homepage.html',
+                                {
+                                    'request':request,
+                                    'department_obj':department_obj
+                                 },
+                                context_instance = RequestContext(request)
+                               ) 
+#---------------------------------------------------------------------------
+def employee_profile(request):
+    """
+    Displays the profile page
+    """
+    if request.method == "POST":
+        department_obj = Department.objects.get(employee=request.user)
+        userprofile_form = UserProfileForm(request.POST)
+        if userprofile_form.is_valid():
+            cd = userprofile_form.cleaned_data
+            userprofile_obj = UserProfile.objects.get(user=request.user)
+            userprofile_obj.first_name = cd['first_name']
+            userprofile_obj.last_name = cd['last_name']
+            userprofile_obj.email = cd['email']
+            userprofile_obj.street1 = cd['street1']
+            userprofile_obj.street2 = cd['street2']
+            userprofile_obj.zip_code = cd['post_code']
+            userprofile_obj.country = cd['country']
+            userprofile_obj.company = department_obj.company
+            userprofile_obj.save()
+            user_obj = User.objects.get(id=request.user.id)
+            user_obj.first_name = userprofile_obj.first_name
+            user_obj.last_name = userprofile_obj.last_name
+            user_obj.email = userprofile_obj.email 
+            return HttpResponseRedirect('/registration/employee_leave/')
+        else:
+            print "UserProfileForm is invalid"
+    else:
+        userprofile_form = UserProfileForm()
+        try:
+            userprofile_obj = UserProfile.objects.get(user=request.user)
+            userprofile_form.fields['first_name'].initial = userprofile_obj.first_name
+            userprofile_form.fields['last_name'].initial = userprofile_obj.last_name
+            userprofile_form.fields['email'].initial = userprofile_obj.email
+            userprofile_form.fields['street1'].initial = userprofile_obj.street1
+            userprofile_form.fields['street2'].initial = userprofile_obj.street2
+            userprofile_form.fields['post_code'].initial = userprofile_obj.zip_code
+            userprofile_form.fields['country'].initial = userprofile_obj.country
+            
+        except:
+            pass
+        
+    return render_to_response(
+                                'registration/emp_profile.html',
+                                {
+                                    'userprofile_form':userprofile_form,
+                                    'request':request,
+                                    'active':'profile'
+                                 },
+                                context_instance = RequestContext(request)
+                            )
+#---------------------------------------------------------------------------
+def employee_leave(request):
+    """
+    Leads to Leave application form because they will not have any rights.
+    """
+
+    if request.method == "POST":
+        leave_form = LeaveForm(request.POST)
+        if leave_form.is_valid():
+            cd = leave_form.cleaned_data
+            # Picking all department of user
+            userprofile_obj = UserProfile.objects.get(user=request.user)
+            department_list = userprofile_obj.department.all()
+            supervisor = User.objects.get(id=cd['supervisor'])
+            leave_obj = Leave(
+                        type_of_leave = cd['type_of_leave'],
+                        start_date = cd['start_date'],
+                        end_date = cd['end_date'],
+                        user = request.user,
+                        reason = cd['reason'],
+                        supervisor = supervisor
+                        )
+            leave_obj.save()
+            
+            # finally adding those departments to leave_obj
+            for department in department_list:
+                leave_obj.department.add(department)
+            
+            # Send email to supervisor
+            
+            t = loader.get_template('registration/employee_leave.txt')
+            username = request.user.username
+            c = Context({
+                'id':request.user.id,
+                'department_name':department_list[0].name,
+                'username':username,
+                'supervisor':leave_obj.supervisor,
+                'reason':cd['reason'],
+                'start_date':cd['start_date'],
+                'end_date':cd['end_date'],
+                'type_of_leave':cd['type_of_leave']
+                
+            })
+            msg = t.render(c)
+            subject = "Leave Application from %s department" % userprofile_obj.department.all()[0].name
+
+            send_mail(
+                subject,
+                msg,
+                request.user.email,
+                [userprofile_obj.department.all()[0].supervisor.email],
+                fail_silently=True
+            )
+            return render_to_response(
+                                        'registration/leave_approval.html',
+                                        {'request':request},
+                                        context_instance = RequestContext(request)
+                                       )
+                
+        else:
+            print "Leave Application Form is invalid "
+    else:
+        leave_form = LeaveForm()
+    return render_to_response('registration/emp_leave.html',
+                                {
+                                 'leave_form':leave_form,
+                                 'request':request,
+                                 'base_url':BASE_URL,
+                                 'active':'leave'
+                                },
+                                context_instance = RequestContext(request)
+                                )
+#------------------------Employer Section Ends------------------------------------
+
+#-----------------------Common Functions/methods----------------------------------
+
+def leave_detail(request):
+    """
+    deccribe the detail for a particular leave
+    """
+    leave_obj = Leave.objects.get(id=request.GET['id'])
+    return render_to_response(
+                                'registration/leave_detail.html',
+                                {
+                                    'request':request,
+                                    'leave_obj':leave_obj
+                                },
+                                context_instance = RequestContext(request)
+                                )
+    
+#---------------------------------------------------------------------------
+def leave_approval(request):
+    """
+    leave approval process makes the status field true or false
+    """
+   
+    leave_obj = Leave.objects.get(id=request.GET['id'])
+    if request.GET['name'] == "accept":
+        leave_obj.status = True
+        approve_variable = "Approved"
+    else:
+        leave_obj.status = False
+        approve_variable = "Disapproved"
+    leave_obj.save()
+        
+    # Send email to employer
+    
+    t = loader.get_template('registration/leave_status_email.txt')
+    c = Context({
+        'employee':leave_obj.user.username,
+        'start_date':leave_obj.start_date,
+        'end_date':leave_obj.end_date,
+        'type_of_leave':leave_obj.type_of_leave,
+        'length':leave_obj.leave_count,
+        'approve_variable':approve_variable
+    })
+    msg = t.render(c)
+    subject = "Leave Application %s" % approve_variable
+
+    send_mail(
+        subject,
+        msg,
+        # All these emails will be ofcourse from company id.
+        request.user.email,
+        [leave_obj.user.email],
+        fail_silently=True
+    )
+    return render_to_response(
+                                'registration/leave_status.html',
+                                {
+                                    'request':request,
+                                    'leave_obj':leave_obj,
+                                    'approve_variable':approve_variable
+                                },
+                                context_instance = RequestContext(request)
+                                )
+#---------------------------------------------------------------------------
+def password_reset(request):
+    """
+    Change password for logged in user
+    whether it is supervisor or it is an employee
+    """
+
+    if request.method == "POST":
+        password_form = PasswordForm(request.POST)
+        if password_form.is_valid():
+            cd = password_form.cleaned_data
+            user_obj = User.objects.get(id=request.GET['id'])
+            user_obj.username = cd['username']
+            user_obj.set_password(cd['password'])
+            user_obj.save()
+            new_profile = user_obj.profile
+            profile = user_obj.profile
+            key = uuid.uuid4().__str__()
+            profile.key = key
+            profile.first_name = user_obj.first_name
+            profile.last_name = user_obj.last_name
+            profile.email = user_obj.email
+            profile.save()
+            userprofile_obj = UserProfile.objects.get(user=user_obj)
+            if userprofile_obj.is_supervisor == True:
+                return HttpResponseRedirect('/registration/supervisor_detail/?id=%s' % user_obj.id)
+            else:
+                return HttpResponseRedirect('/registration/employee_leave/')
+        else:
+            print "Default password Form is invalid !"
+            
+    else:
+        password_form = PasswordForm()
+            
+    return render_to_response('registration/password_reset_form.html',
+                                {
+                                'request':request,
+                                'password_form':password_form,
+                                },
+                                context_instance = RequestContext(request)
+                              )
+#---------------------------------------------------------------------------

@@ -111,18 +111,36 @@ class UserProfile(models.Model):
 User.profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])    
 
 
+
+class LeaveType(models.Model):
+    """
+    Specify the leave type.
+    """
+    type_of_leave = models.CharField(max_length=255,help_text="Type of Leave") 
+    
+    def __unicode__(self):
+        return self.type_of_leave
+    
+
+
 class Leave(models.Model):
     """
     When the employee is applying for leave
     """
     
-    type_of_leave = models.CharField(max_length=255,help_text="Type of Leave")
+    type_of_leave = models.ForeignKey(LeaveType,null=True,blank=True)
     start_date = models.DateField()
     end_date = models.DateField()
-    user = models.ForeignKey(User)
+    user = models.ForeignKey(User,help_text="Employer who wants leave")
     department = models.ManyToManyField(Department,null=True,blank=True)
     leave_count = models.CharField(max_length=5,null=True,blank=True)
     reason = models.TextField(null=True,blank=True)
+    status = models.BooleanField(default=False)
+    supervisor = models.ForeignKey(
+                                    User,related_name="supervisor_leave",
+                                    help_text = "who is supervisor",
+                                    null=True,blank=True,
+                                   )
     
     def __unicode__(self):
         leave_count = str(self.leave_count)

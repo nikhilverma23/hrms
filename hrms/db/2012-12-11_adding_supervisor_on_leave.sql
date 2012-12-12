@@ -1,0 +1,2 @@
+ALTER TABLE "registration_leave" ADD COLUMN  "supervisor_id" integer REFERENCES "auth_user" ("id") DEFERRABLE INITIALLY DEFERRED;
+CREATE INDEX registration_leave_supervisor ON registration_leave USING btree (supervisor_id);

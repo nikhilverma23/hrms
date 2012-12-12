@@ -1,0 +1,16 @@
+Hi {{supervisor}}
+
+You have recieved a leave application from an employer.
+
+Details:-
+Username    : {{username}}
+Leave Start : {{start_date}}
+Leave End   : {{end_date}}
+Leave Type  : {{type_of_leave}}
+Reason      : {{reason}}
+
+
+Thanks
+
+Regards
+HRMSystems

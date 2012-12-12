@@ -1,0 +1,16 @@
+{% extends 'base/skeleton.html' %}
+
+{% block content %}
+<div id='emp_container'>
+	<form name="employee_profile" action="" method="post" class="form-horizontal">
+		{% csrf_token %}
+		{{userprofile_form.as_p}}
+		<div class="control-group">
+			<div class="controls">
+				<input type='hidden' name='formname' value='employee_profile'>
+				<input type="submit" class='btn btn-primary btn-large' value="Submit &raquo;" />
+			</div>
+		</div>
+	</form>
+</div>
+{% endblock %}

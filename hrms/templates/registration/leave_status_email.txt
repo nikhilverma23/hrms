@@ -1,0 +1,10 @@
+Hi {{employee}}
+
+
+Your {{type_of_leave}} from {{start_date}} to {{end_date}} has been {{approve_variable}}.
+
+
+
+
+Regards
+HRMSystems

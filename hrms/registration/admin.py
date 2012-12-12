@@ -29,6 +29,9 @@ class UserProfileAdmin(admin.ModelAdmin):
     
 class LeaveAdmin(admin.ModelAdmin):
     list_display = ('user','start_date','end_date','type_of_leave')
+
+class LeaveTypeAdmin(admin.ModelAdmin):
+    list_display = ('type_of_leave',)
     
 class RestrictedDayAdmin(admin.ModelAdmin):
     list_display = ('title','restriction_day_date')
@@ -41,4 +44,5 @@ admin.site.register(Company,CompanyAdmin)
 admin.site.register(Department,DepartmentAdmin)
 admin.site.register(UserProfile,UserProfileAdmin)
 admin.site.register(Leave,LeaveAdmin)
+admin.site.register(LeaveType,LeaveTypeAdmin)
 admin.site.register(RestrictedDay,RestrictedDayAdmin)

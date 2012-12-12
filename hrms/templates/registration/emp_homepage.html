@@ -1,0 +1,28 @@
+{% extends 'base/skeleton.html' %}
+
+{% block content %}
+
+<h4>Hi {{request.user.username}} !</h4>
+
+    
+     <table border="1" cellpadding="5" cellspacing="5">
+            <tr>
+                <td>Employee Name</td>
+                <td>Employee Department</td>
+                <td>Employee Company</td>
+                <td>Employee Supervisor</td>
+                
+            </tr>
+                
+                <tr>
+                
+                    <td>{{request.user}}</td>
+                    <td>{{department_obj.name}}</td>
+                    <td>{{department_obj.company}}</td>
+                    <td>{{department_obj.supervisor.username}}</td>
+                </tr>
+                
+                
+            
+        </table>
+{% endblock %}

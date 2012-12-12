@@ -1,0 +1,35 @@
+{% extends 'base/skeleton.html' %}
+
+{% block content %}
+        <script src="http://code.jquery.com/jquery-1.8.3.js"></script>
+        
+        <table border="1" cellpadding="5" cellspacing="5">
+            <tr>
+                <td>Leave Recieved From</td>
+                <td>Leave From</td>
+                <td>Leave To</td>
+                <td>Leave Type</td>
+                <td>Leave Reason</td>
+            </tr>
+                  
+                <tr>
+                    <td>{{leave_obj.user.username}}</td>
+                    <td>{{leave_obj.start_date}}</td>
+                    <td>{{leave_obj.end_date}}</td>
+                    <td>{{leave_obj.type_of_leave}}</td>
+                    <td>{{leave_obj.reason}}</td>
+                </tr>
+                
+            
+        </table>
+        
+                <div class="controls">
+                        <div class="leave-accept-button">
+                                <a class="btn btn-success" href="/registration/leave_approval/?id={{leave_obj.id}}&name=accept">Accept</a>
+                                <a class="btn btn-danger" href="/registration/leave_approval/?id={{leave_obj.id}}&name=reject">Reject</a>        
+                        </div>
+                </div>
+	
+        
+
+{% endblock %}
