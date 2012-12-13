@@ -1,5 +1,6 @@
 # Django Imports
-from django.db import models
+from django.db import models, signals
+from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 #hrms Imports
 from hrms.settings import USER_KEY_EXPIRATION_DAYS
@@ -171,5 +172,19 @@ class Allowances(models.Model):
     
     def __unicode__(self):
         return self.title
-    
-    
+
+
+#from django.dispatch import dispatcher
+#
+#def set_department(**kwargs):
+#    """
+#    Set the department in UserProfile so that they cab be achieved
+#    in editing department form.
+#    """
+#    userprofile = kwargs['instance']
+#    department_obj = Department.objects.filter()
+#    if not userprofile.department:
+#        userprofile.department = hashlib.sha1(visit.title + str(time.time())).hexdigest()
+#
+#
+#post_save.connect(set_department, sender=UserProfile)

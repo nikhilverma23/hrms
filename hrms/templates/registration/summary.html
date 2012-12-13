@@ -2,29 +2,25 @@
 
 {% block content %}
 
-<table border="1" cellpadding="5" cellspacing="5">
-<tr>
-    <td>Company Name</td>
-    <td>Department Name</td>
-    <td>Supervisors Name</td>
-    <td>Employees</td>
-</tr>
-{% for department in department_obj %}
-    <tr>
-        <td>{{company_obj}}</td>
-        <td>{{department}}</td>
-        <td>{{department.supervisor}}</td>
-        <td>&nbsp;</td>
+<table class="table table-striped table-bordered">
+    <tr class="info">
+        <td>Company Name</td>
+        <td>Department Name</td>
+        <td>Supervisors Name</td>
+        <td>Employees</td>
+        <td>Actions</td>
     </tr>
-    {% for emp_name in department.employee.all %}
+    {% for department in department_obj %}
         <tr>
-            
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>&nbsp;</td>
-            <td>{{emp_name}}</td>
+            <td>{% if forloop.first %}{{department.company}}{% endif %}</td>
+            <td>{{department}}</td>
+            <td>{{department.supervisor}}</td>
+            <td>{% for emp_name in department.employee.all %}{{emp_name.get_full_name}}{% endfor %}</td>
+            <td>
+		<a href="javascript:void(0)"><img src="/static/images/delete_icon.png"/></a>
+		<a href="javascript:void(0)"><img src="/static/images/edit_icon.png"/></a>
+	    </td>
         </tr>
-    {% endfor %}
 {% endfor %}
 </table>
 <div style="margin-top: 20px;">

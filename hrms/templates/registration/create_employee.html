@@ -69,5 +69,38 @@
 	</form>
 </div>
 
+<table class="table table-striped table-bordered">
+	<tr class="info">
+		<td>S.No</td>	
+		<td>First Name</td>
+		<td>Last Name</td>
+		<td>Email</td>
+		<td>Supervisor</td>
+		<td>Update</td>
+		<td>Delete</td>
+	    
+        </tr>
+	
+        {% for department_obj in department %}
+		<tr>
+			<td>{{forloop.counter}}</td>
+			<td>{% for emp in department_obj.employee.all %}{{emp.first_name}}{% endfor %}</td>
+			<td>{% for emp in department_obj.employee.all %}{{emp.last_name}}{% endfor %}</td>
+			<td>{% for emp in department_obj.employee.all %}{{emp.email}}{% endfor %}</td>
+			<td>{{department_obj.supervisor}}</td>
+			{% comment %}			<td>
+				<a href="javascript:void(0)" id="{% for emp in department_obj.employee.all %}{{emp.id}}{% endfor %}"><img src="/static/images/delete_icon.png"/></a>
+				<a href="javascript:void(0)" id="{% for emp in department_obj.employee.all %}{{emp.id}}{% endfor %}"><img src="/static/images/edit_icon.png"/></a>
+			</td>
+			{% endcomment %}
+			<td onclick="document.location.href='/registration/update_employee/?id={% for emp in department_obj.employee.all %}{{emp.id}}{% endfor %}';">
+				<a href="/registration/update_employee/?id={% for emp in department_obj.employee.all %}{{emp.id}}{% endfor %}" id="{% for emp in department_obj.employee.all %}{{emp.id}}{% endfor %}"><img src="/static/images/edit_icon.png"/></a>
+			</td>
+			<td onclick="document.location.href='/registration/leads_to_delete_employeepage/?id={{department.id}}';">
+				<a href="/registration/leads_to_delete_employeepage/?id={% for emp in department_obj.employee.all %}{{emp.id}}{% endfor %}" id="{% for emp in department_obj.employee.all %}{{emp.id}}{% endfor %}"><img src="/static/images/delete_icon.png"/></a>
+			</td>
+		</tr>
+	{% endfor %}
+</table>
 
 {% endblock %}

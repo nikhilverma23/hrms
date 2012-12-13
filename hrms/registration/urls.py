@@ -21,4 +21,10 @@ urlpatterns = patterns(
     url(r'^employee_homepage/$', 'employee_homepage',name='employee_homepage'),
     url(r'^supervisor_profile/$', 'supervisor_profile',name='supervisor_profile'),
     url(r'^supervisor_leave/$', 'supervisor_leave',name='supervisor_leave'),
+    url(r'^update_department/$', 'update_department',name='update_department'),
+    url(r'^leads_to_delete_page/$', 'leads_to_delete_page',name='leads_to_delete_page'),
+    url(r'^delete_department/$', 'delete_department',name='delete_department'),
+    url(r'^update_employee/$', 'update_employee',name='update_employee'),
+    url(r'^leads_to_delete_employeepage/$', 'leads_to_delete_employeepage',name='leads_to_delete_employeepage'),
+    url(r'^delete_employee/$', 'delete_employee',name='delete_employee'),
 )

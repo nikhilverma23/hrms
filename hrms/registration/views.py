@@ -154,6 +154,7 @@ def create_department(request):
     """
     Adding Department
     """
+    userprofile_obj = UserProfile.objects.get(user=request.user)
     if request.method =="POST":
         department_form = DepartmentForm(request.POST)
         if department_form.is_valid():
@@ -203,8 +204,8 @@ def create_department(request):
                 profile.last_name = user_obj.last_name
                 profile.email = user_obj.email
                 profile.is_supervisor = True
-                #profile.department.add(department_name_list[department_counter])
                 profile.save()
+               
                 # Now Send them the email
                 subject = "Supervisor of %s department" % department_obj[0].name
                  # Send them an email.
@@ -227,20 +228,100 @@ def create_department(request):
                     fail_silently=True
                 )
                 department_counter += 1
-                
+            # Making sure that all department are from the current logged
+            # in company and then using userprofile object adding these
+            #departments so that we can edit the department form.
+            #I was not able to find  any other way . 
+            get_department_obj = Department.objects.filter(company=company_obj)
+            for department in get_department_obj:
+                userprofile_obj.department.add(department)
+            # redirecting it to employee form
             return HttpResponseRedirect('/registration/employee/')
             
     else:
         department_form = DepartmentForm()
+        
     
     return render_to_response('registration/create_department.html',
                               {'request':request,
                                'department_form':department_form,
-                               'active':'department'
+                               'active':'department',
+                               'userprofile_obj':userprofile_obj
                                },
                               context_instance = RequestContext(request)
                               )
-#---------------------------------------------------------------------------    
+#---------------------------Create Department End-----------------------
+
+#--------------------------- Update Department Starts-------------------------
+
+def update_department(request):
+    """
+    updates the selected department.
+    """
+    
+    if request.method == "GET":
+        if request.GET['id']:
+            id = request.GET['id']
+            department_obj = Department.objects.get(id=id)
+            department_form = DepartmentForm()
+            department_form.fields['name'].initial = department_obj.supervisor.username
+            department_form.fields['supervisor_first_name'].initial = department_obj.supervisor.first_name
+            department_form.fields['supervisor_last_name'].initial = department_obj.supervisor.last_name
+            department_form.fields['supervisor_email'].initial = department_obj.supervisor.email
+    else:
+        # It will be a POST
+        department_form = DepartmentForm(request.POST)
+        if department_form.is_valid():
+            cd = department_form.cleaned_data
+            department_obj = Department.objects.get(id=request.GET['id'])
+            department_obj.name = cd['name']
+            department_obj.save()
+            user_id = department_obj.supervisor.id
+            user_obj =  User.objects.get(id=user_id)
+            user_obj.email = cd['supervisor_email']
+            user_obj.first_name = cd['supervisor_first_name']
+            user_obj.last_name = cd['supervisor_last_name']
+            user_obj.save()
+            return HttpResponseRedirect('/registration/department/')
+        
+    return render_to_response('registration/update_department.html',
+                              {'request':request,
+                               'department_form':department_form,
+                               'active':'department',
+                               },
+                              context_instance = RequestContext(request)
+                              )
+#--------------------------- Company updates Department -------------------------
+
+#------------------------Company decides to delete department-----------------------
+def leads_to_delete_page(request):
+    """
+    leads to delete confirmation page for department
+    """
+    department_id = request.GET.get('id')
+    department_obj = Department.objects.get(id=department_id)
+    return render_to_response('registration/delete_department.html',
+                              {'request':request,
+                               'department_obj':department_obj,
+                               'active':'department',
+                               },
+                              context_instance = RequestContext(request)
+                              )
+#------------------------Company decides to delete department-----------------------    
+
+def delete_department(request):
+    """
+    allows the company to delete the department
+    """
+    id = request.GET.get('id')
+    department_obj = Department.objects.get(id=id)
+    department_obj.delete()
+    
+    return HttpResponseRedirect('/registration/department/')
+
+#------------------------Company has deleted the  department--------------------
+
+#--------------------------- Company creating employee -------------------------  
 def create_employee(request):
     """
     Adding employees
@@ -311,8 +392,7 @@ def create_employee(request):
                     fail_silently=True
                 )
                 
-                employment_counter += 1
-                
+                employment_counter += 1    
             return HttpResponseRedirect('/registration/summary/')
         
             
@@ -331,12 +411,85 @@ def create_employee(request):
                                },
                               context_instance = RequestContext(request)
                             )
-#---------------------------------------------------------------------------
+#-------------------------Company has created Employee------------------
+
+#---------------Company's can update their employees -------------------
+def update_employee(request):
+    """
+    updates the selected employee.
+    """
+    id = request.GET.get('id')
+    if request.method == "GET":
+        
+        user_obj = User.objects.get(id=id)
+        userprofile_obj = UserProfile.objects.get(user=user_obj)
+        employee_form = EmployeeForm()
+        employee_form.fields['department'].initial = userprofile_obj.department
+        employee_form.fields['first_name'].initial = user_obj.first_name
+        employee_form.fields['last_name'].initial = user_obj.last_name
+        employee_form.fields['employee_email'].initial = user_obj.email
+    else:
+        # It will be a POST
+        employee_form = EmployeeForm(request.POST)
+        if employee_form.is_valid():
+            user_obj = User.objects.get(id=id)
+            userprofile_obj = UserProfile.objects.get(user=user_obj)
+            cd = employee_form.cleaned_data
+            user_obj.first_name = cd['first_name']
+            user_obj.last_name = cd['last_name']
+            user_obj.email = cd['employee_email']
+            user_obj.save()
+            
+            userprofile_obj.first_name = cd['first_name']
+            userprofile_obj.last_name = cd['last_name']
+            userprofile_obj.email = cd['employee_email']
+            userprofile_obj.save()
+            userprofile_obj.department.add(cd['department'])
+            return HttpResponseRedirect('/registration/employee/')
+        
+    return render_to_response('registration/update_employee.html',
+                              {'request':request,
+                               'employee_form':employee_form,
+                               'active':'employee',
+                               },
+                              context_instance = RequestContext(request)
+    
+                            )
+#---------------Company's has updated their employees ------------------
+
+#---------------Company is confirming to delete the employee------------
+def leads_to_delete_employeepage(request):
+    """
+    leads to delete confirmation page for department
+    """
+    id = request.GET.get('id')
+    user_obj = User.objects.get(id=id)
+    return render_to_response('registration/delete_employee.html',
+                              {'request':request,
+                               'user_obj':user_obj,
+                               'active':'employee',
+                               },
+                              context_instance = RequestContext(request)
+                              )
+#---------------Company is confirming to delete the employee------------
+
+#---------------Company is confirming to delete the employee------------
+def delete_employee(request):
+    """
+    allows the company to delete the department
+    """
+    id = request.GET.get('id')
+    user_obj = User.objects.get(id=id)
+    user_obj.delete()
+    
+    return HttpResponseRedirect('/registration/employee/')
+#---------------Company is confirming to delete the employee------------
+
+#---------------Company's Summary of department and employees-----------
 def summary(request):
     """
     This will tell the complete summary in a Table
     """
-    
     leave_user = []
     company_obj = Company.objects.get(email=request.user)
     department_obj = Department.objects.filter(company=company_obj)
@@ -347,11 +500,6 @@ def summary(request):
             leave_user.append(emp)
         leave_user.append(supervisor)
     leave_obj = Leave.objects.filter(supervisor=request.user,status=False)
-    
-    #for emp_leave in leave_user:
-    #    leave_obj = Leave.objects.filter(user=emp_leave)
-        
-    
     return render_to_response('registration/summary.html',
                                 {'request':request,
                                 'company_obj':company_obj,
@@ -362,7 +510,9 @@ def summary(request):
                                 },
                                 context_instance = RequestContext(request)
                               )
-#---------------------------------------------------------------------------    
+#---------------Company's Summary of department and employees------------
+
+#--------------------Company's data in csv file--------------------------
 def export_company_data(request):
     company_obj = Company.objects.get(email=request.user)
     department_obj = Department.objects.filter(company=company_obj)
@@ -394,9 +544,12 @@ def export_company_data(request):
     final_row_data = [export_dict[key] for key in row_header_values]     
     writer.writerow(final_row_data)
     return response
+#--------------------Company's data in csv file------------------------------
 
 #---------------------Company Section Ends-----------------------------------
-#---------------------Supervisor section---------------------------------------
+
+
+#---------------------Supervisor section-------------------------------------
 def supervisor_detail(request):
     """
     Describe the detail of leaves to employees.
@@ -411,9 +564,11 @@ def supervisor_detail(request):
         department_obj = Department.objects.filter(supervisor=request.user)
     for d_obj in department_obj:
         employee_obj_list  = d_obj.employee.all()
-    for employee_name in employee_obj_list:
-        leave_obj = Leave.objects.filter(user=employee_name,status=False)
-        
+    if employee_obj_list:
+        for employee_name in employee_obj_list:
+            leave_obj = Leave.objects.filter(user=employee_name,status=False)
+    else:
+        leave_obj = ""
         
     return render_to_response(
                                 'registration/supervisor_detail.html',
