@@ -70,8 +70,7 @@
 <h4>Department Summary</h4>
 
 <table class="table table-striped table-bordered">
-	<tr class="info">
-		<td>S.No</td>	
+	<tr class="info">	
 		<td>Name</td>
 		<td>Employee</td>
 		<td>Company</td>
@@ -83,19 +82,20 @@
 	</tr>
 	{% if userprofile_obj.department.count >= 1 %}
 		{% for department in userprofile_obj.department.all %}
-		<tr>
-			<td>{{forloop.counter}}</td>
-			<td>{{department.name}}</td>
-			<td>{% for emp in department.employee.all %}{{emp}}{% endfor %}</td>
-			<td>{{department.company}}</td>
-			<td>{{department.supervisor}}</td>
-			<td onclick="document.location.href='/registration/update_department/?id={{department.id}}';">
-				<a href="/registration/update_department/?id={{department.id}}" id="{{department.id}}"><img src="/static/images/edit_icon.png"/></a>
-			</td>
-			<td onclick="document.location.href='/registration/leads_to_delete_page/?id={{department.id}}';">
-				<a href="/registration/leads_to_delete_page/?id={{department.id}}" id="{{department.id}}"><img src="/static/images/delete_icon.png"/></a>
-			</td>
-		</tr>
+			{% for emp in department.employee.all %}
+				<tr>
+					<td>{{department.name}}</td>
+					<td>{{emp}}</td>
+					<td>{{department.company}}</td>
+					<td>{{department.supervisor}}</td>
+					<td onclick="document.location.href='/registration/update_department/?id={{department.id}}';">
+						<a href="/registration/update_department/?id={{department.id}}" id="{{department.id}}"><img src="/static/images/edit_icon.png"/></a>
+					</td>
+					<td onclick="document.location.href='/registration/leads_to_delete_page/?id={{department.id}}';">
+						<a href="/registration/leads_to_delete_page/?id={{department.id}}" id="{{department.id}}"><img src="/static/images/delete_icon.png"/></a>
+					</td>
+				</tr>
+			{% endfor %}
 		{% endfor %}
 	{% else %}
 		You need to add department

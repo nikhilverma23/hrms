@@ -500,17 +500,46 @@ def summary(request):
             leave_user.append(emp)
         leave_user.append(supervisor)
     leave_obj = Leave.objects.filter(supervisor=request.user,status=False)
-    return render_to_response('registration/summary.html',
-                                {'request':request,
-                                'company_obj':company_obj,
-                                'department_obj':department_obj,
-                                'leave_obj':leave_obj,
-                                'base_url':BASE_URL,
-                                'active':'summary'
-                                },
-                                context_instance = RequestContext(request)
-                              )
+    if request.GET.get('active') == "summary":
+        # calling the summary page
+        return render_to_response('registration/summary.html',
+                                    {'request':request,
+                                    'company_obj':company_obj,
+                                    'department_obj':department_obj,
+                                    'leave_obj':leave_obj,
+                                    'base_url':BASE_URL,
+                                    'active':'summary'
+                                    },
+                                    context_instance = RequestContext(request)
+                                  )
+    elif request.GET.get('active') == "leave_requests":
+        # Here we can see all the leaves
+        return render_to_response('registration/company_leave_summary.html',
+                                    {'request':request,
+                                    'company_obj':company_obj,
+                                    'department_obj':department_obj,
+                                    'leave_obj':leave_obj,
+                                    'base_url':BASE_URL,
+                                    'active':'leave_requests'
+                                    },
+                                    context_instance = RequestContext(request)
+                                  )
+    elif request.GET.get('active') == 'export':
+        # Here we can see the summary and go to export button
+        return render_to_response('registration/summary.html',
+                                    {'request':request,
+                                    'company_obj':company_obj,
+                                    'department_obj':department_obj,
+                                    'leave_obj':leave_obj,
+                                    'base_url':BASE_URL,
+                                    'active':'export'
+                                    },
+                                    context_instance = RequestContext(request)
+                                  )
+        
+        
 #---------------Company's Summary of department and employees------------
+
 
 #--------------------Company's data in csv file--------------------------
 def export_company_data(request):
