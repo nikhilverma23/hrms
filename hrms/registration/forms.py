@@ -79,6 +79,9 @@ class EmployeeForm(forms.Form):
     
        
 
+class LeaveTypeForm(forms.Form):
+    type_of_leave = forms.CharField(max_length=256,required=True)
+
 class PasswordForm(forms.Form):
     """
     This form changes the default username and password

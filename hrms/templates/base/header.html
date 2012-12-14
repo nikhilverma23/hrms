@@ -13,8 +13,8 @@
 					<ul class="nav nav-tabs">
 						<li {% if active == 'department' %}class="active"{% endif %}><a href="{% url create-department %}">Departments</a></li>
 						<li {% if active == 'employee' %}class="active"{% endif %}><a href="{% url create-employee %}">Employees</a></li>
-						<li {% if active == 'summary' %}class="active"{% endif %}><a href="/registration/summary/?active=summary">Summary</a></li>
 						<li {% if active == 'leave_requests' %}class="active"{% endif %}><a href="/registration/summary/?active=leave_requests">Leave Requests</a></li>
+						<li {% if active == 'summary' %}class="active"{% endif %}><a href="/registration/summary/?active=summary">Summary</a></li>
 						<li {% if active == 'export' %}class="active"{% endif %}><a href="/registration/summary/?active=export">Export Data</a></li>
 					</ul>
 				{% endif %}

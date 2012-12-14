@@ -27,4 +27,5 @@ urlpatterns = patterns(
     url(r'^update_employee/$', 'update_employee',name='update_employee'),
     url(r'^leads_to_delete_employeepage/$', 'leads_to_delete_employeepage',name='leads_to_delete_employeepage'),
     url(r'^delete_employee/$', 'delete_employee',name='delete_employee'),
+    url(r'^create_type_of_leave/$', 'create_type_of_leave',name='create_type_of_leave'),
 )

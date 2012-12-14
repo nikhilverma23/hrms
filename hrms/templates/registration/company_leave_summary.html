@@ -1,11 +1,43 @@
 {% extends "base/skeleton.html" %}
 
-    {% block content %}
+
+{% block html_js %}
+	
+	<script src="/static/js/handlebars.js"></script>
+	<script id="type_of_leave_section" type="text/x-handlebars-template">
+		<div class="field">
+		    <input type="text" maxlength="256" name="type_of_leave[]" class="input-medium" id="id_type_of_leave" value="{% templatetag openvariable %}type_of_leave{% templatetag closevariable %}" />
+		    <a href="javascript:void(0)" class="delete_type_of_leave_link"><img src="/static/images/delete_icon.png"/></a>	
+		</div>
+	</script>
+	<script>
+		var type_of_leave_section_source   = $("#type_of_leave_section").html();
+		var type_of_leave_section_template = Handlebars.compile(type_of_leave_section_source);
+		function add_type_of_leave_section(type_of_leave_section_data)
+		{
+			if(!type_of_leave_section_data)
+				type_of_leave_section_data = {};
+			var type_of_leave_section_html = type_of_leave_section_template(type_of_leave_section_data);
+			$("#type_of_leave_section_div").append(type_of_leave_section_html);
+		}
+		$(".add_type_of_leave_link").click(function(){
+			add_type_of_leave_section()
+		});
+		$('#type_of_leave_section_div').on('click', 'a.delete_type_of_leave_link', function(e) {
+			$(this).parent().remove();
+		});
+		add_type_of_leave_section();
+	</script>
+	
+	
+{% endblock html_js %}
+
+{% block content %}
     <div>
         <h5>You have recieved {{leave_obj.count}} leave application request.</h5>
     </div>
     {% if leave_obj.count >= 1 %}
-        <table border="1" cellpadding="5" cellspacing="5">
+        <table>
             <tr>
                 <td>Leave Recieved From</td>
                 <td>Leave From</td>
@@ -26,6 +58,32 @@
             
         </table>
     {% endif %}
-    
-{% endblock %}
-                   
+    <div id='leave_container'>
+        <form name="type_of_leave" action="" method="post" class="form-horizontal">
+		{% csrf_token %}
+		<div>
+			<fieldset>
+				<legend>Type of Leave</legend>
+				<div class="field">
+					<label>Type of Leave</label>
+					
+				</div>
+				<div id="type_of_leave_section_div"></div>
+				<div class="delete_type_of_type_of_leave_link">
+				    <a class="btn btn-success add_type_of_leave_link" href="javascript:void(0)">
+                                        <i class="icon-plus-sign icon-white"></i>
+                                        Add More
+                                    </a>
+				</div>
+			</fieldset>
+		</div>
+		<div class="control-group">
+			<div class="controls">
+				<input type='hidden' name='formname' value='type_of_leave'>
+				<input type="submit" class='btn btn-primary btn-small' value="Create LeaveType &raquo;" text="Sign Up" />
+			</div>
+		</div>
+                
+	</form>
+    </div>
+{% endblock %}  

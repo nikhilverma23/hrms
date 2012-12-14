@@ -23,9 +23,9 @@ from django.template import RequestContext, loader, Context
 #HRMS imports
 from hrms.home.forms import LoginForm
 from hrms.registration.forms import DepartmentForm, EmployeeForm,\
-PasswordForm ,LeaveForm ,UserProfileForm 
+PasswordForm ,LeaveForm ,UserProfileForm, LeaveTypeForm
 from hrms.registration.models import Department, UserProfile,\
-Company, Leave
+Company, Leave, LeaveType
 from hrms.settings import BASE_URL
 
 
@@ -393,7 +393,7 @@ def create_employee(request):
                 )
                 
                 employment_counter += 1    
-            return HttpResponseRedirect('/registration/summary/')
+            return HttpResponseRedirect('/registration/summary/?active=leave_requests')
         
             
     else:
@@ -485,6 +485,36 @@ def delete_employee(request):
     return HttpResponseRedirect('/registration/employee/')
 #---------------Company is confirming to delete the employee------------
 
+#---------------Company is creating type of leave-------------
+from django.forms.formsets import formset_factory
+
+
+def create_type_of_leave(request):
+    if request.method == "POST":
+        type_of_leave_form = LeaveTypeForm(request.POST)
+        if type_of_leave_form.is_valid():
+            cd = type_of_leave_form.cleaned_data
+            type_of_leave = LeaveType.objects.get_or_create(
+                            type_of_leave = cd['type_of_leave']    
+                            )
+        else:
+            print "LeaveTypeForm is invalid"
+    else:
+        type_of_leave_form = LeaveTypeForm()
+    return render_to_response('registration/company_leave_summary.html',
+                                    {'request':request,
+                                    #'company_obj':company_obj,
+                                    #'department_obj':department_obj,
+                                    #'leave_obj':leave_obj,
+                                    'base_url':BASE_URL,
+                                    'active':'leave_requests'
+                                    },
+                                    context_instance = RequestContext(request)
+                                  )
+
+#---------------Company has created type of leaves------------
+
+
 #---------------Company's Summary of department and employees-----------
 def summary(request):
     """
@@ -514,13 +544,30 @@ def summary(request):
                                   )
     elif request.GET.get('active') == "leave_requests":
         # Here we can see all the leaves
+        if request.method == "POST":
+            type_of_leave_form = LeaveTypeForm(request.POST)
+            if type_of_leave_form.is_valid():
+                cd = type_of_leave_form.cleaned_data
+                type_of_leave = LeaveType.objects.get_or_create(
+                                type_of_leave = cd['type_of_leave']    
+                                )
+            else:
+                print "LeaveTypeForm is invalid"
+        else:
+            type_of_leave_form = LeaveTypeForm()
+            try:
+                type_of_leave_obj = LeaveType.objects.get(id=id)
+                type_of_leave_form.fields['type_of_leave'].initial = type_of_leave_obj.type_of_leave
+            except:
+                pass
         return render_to_response('registration/company_leave_summary.html',
                                     {'request':request,
                                     'company_obj':company_obj,
                                     'department_obj':department_obj,
+                                    'type_of_leave_form':type_of_leave_form,
                                     'leave_obj':leave_obj,
                                     'base_url':BASE_URL,
-                                    'active':'leave_requests'
+                                    'active':'leave_requests',
                                     },
                                     context_instance = RequestContext(request)
                                   )

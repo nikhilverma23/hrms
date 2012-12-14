@@ -8,7 +8,7 @@ from django.contrib.auth import authenticate, login
 #HRMS Imports
 from hrms import settings
 from hrms.settings import BASE_URL
-from hrms.registration.models import Company
+from hrms.registration.models import Company, UserProfile
 from hrms.registration.views import register_user
 from hrms.registration.forms import CompanyForm
 from hrms.home.forms import LoginForm
@@ -42,6 +42,9 @@ def home(request):
                                 business_year_end = cd['business_year_end'],
                                 description = cd['description'],
                                 )
+                #userprofile_obj = UserProfile.objects.get(user=user)
+                #userprofile_obj.is_supervisor = True
+                #userprofile_obj.save()
                 
                 
                 if user:
@@ -80,7 +83,7 @@ def home(request):
                                    password=data['password'])
                 login(request, user)
                 if user.is_staff == True:
-                    return HttpResponseRedirect('/registration/summary/?user=company')
+                    return HttpResponseRedirect('/registration/summary/?user=company&active=summary')
                 elif user.userprofile_set.values('is_supervisor')[0].get('is_supervisor') == True:
                     return HttpResponseRedirect('/registration/supervisor_detail/')
                 else:
