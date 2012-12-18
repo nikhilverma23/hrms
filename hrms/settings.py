@@ -131,6 +131,7 @@ INSTALLED_APPS = (
     # custom apps
     'registration',
     'home',
+    'cal',
 )
 
 # A sample logging configuration. The only tangible logging

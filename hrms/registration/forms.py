@@ -1,6 +1,6 @@
 from django import forms
 from hrms.registration.models import Category, Country, Department,\
-UserProfile, LeaveType
+UserProfile, LeaveType, Days
 
 
 class CompanyForm(forms.Form):
@@ -15,6 +15,17 @@ class CompanyForm(forms.Form):
     industry_type = forms.ModelChoiceField(queryset=Category.objects.all()\
                                           ,required=False)
     website = forms.URLField(required=True)
+    weekdays = forms.ModelMultipleChoiceField(
+                                                queryset=Days.objects.all(),
+                                                widget= forms.CheckboxSelectMultiple(),
+                                                required=False
+                                            )
+    type_of_leave = forms.ModelMultipleChoiceField(
+                                            queryset=LeaveType.objects.all(),\
+                                            widget= forms.CheckboxSelectMultiple(),
+                                            required=True,
+                                        )
+    
     description = forms.CharField(widget=forms.Textarea, initial='Describe omething about the company')
     #Address Fields
     street1 = forms.CharField(label= "Address", max_length=255,required=True)
@@ -80,7 +91,15 @@ class EmployeeForm(forms.Form):
        
 
 class LeaveTypeForm(forms.Form):
+    
+
     type_of_leave = forms.CharField(max_length=256,required=True)
+    weekdays = forms.ModelMultipleChoiceField(
+                                                queryset=Days.objects.all(),
+                                                widget= forms.CheckboxSelectMultiple(),
+                                                required=False
+                                              )
+    allowances = forms.CharField(max_length=255,required=True)
 
 class PasswordForm(forms.Form):
     """

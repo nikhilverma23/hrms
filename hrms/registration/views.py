@@ -37,7 +37,6 @@ def registration_confirmation(request):
         email = ''
     return render_to_response('registration/registration_confirmation.html',
                               {'email' : email})
-
 #------------------------------------------------------------------------------
 def registration_failure(request):
     return render_to_response('registration/registration_failure.html')
@@ -402,12 +401,18 @@ def create_employee(request):
         company_obj = Company.objects.get(email=request.user.username)
         # Listing the department created by the company itself
         department = company_obj.department_set.all()
+        emp_list = []
+        for department_obj in  department:
+            for emp in department_obj.employee.all():
+                emp_list.append(emp)
+            emp_list.append(department_obj.supervisor)
             
     return render_to_response('registration/create_employee.html',
                               {'request':request,
                                'department':department,
                                'employee_form':employee_form,
-                               'active':'employee'
+                               'active':'employee',
+                               'emp_list':emp_list
                                },
                               context_instance = RequestContext(request)
                             )
@@ -546,13 +551,35 @@ def summary(request):
         # Here we can see all the leaves
         if request.method == "POST":
             type_of_leave_form = LeaveTypeForm(request.POST)
+            import pdb
+            pdb.set_trace()
             if type_of_leave_form.is_valid():
+                
                 cd = type_of_leave_form.cleaned_data
-                type_of_leave = LeaveType.objects.get_or_create(
-                                type_of_leave = cd['type_of_leave']    
-                                )
+                
             else:
                 print "LeaveTypeForm is invalid"
+                leave_type_counter = 0
+                # company is creating leave type
+                type_of_leave_list = request.POST.getlist('type_of_leave[]')
+                # what is the allowance of that leave type
+                allowances_list = request.POST.getlist('allowances[]')
+                # the days companies will tend to work
+                # this can be overridden by department
+                # and also by the employees
+                weekdays = request.POST.getlist('weekdays')
+                for leave_type in type_of_leave_list:
+                    type_of_leave_obj = LeaveType.objects.get_or_create(
+                                    type_of_leave = type_of_leave_list[leave_type_counter],
+                                    allowances = allowances_list[leave_type_counter]
+                    )
+                    company_obj.type_of_leave.add(type_of_leave_obj[0])
+                    company_obj.save()
+                    leave_type_counter += 1
+                for days_of_week in weekdays:
+                    company_obj.weekdays.add(days_of_week)
+                return HttpResponseRedirect('/registration/summary/?active=summary')
+                    
         else:
             type_of_leave_form = LeaveTypeForm()
             try:
@@ -587,6 +614,48 @@ def summary(request):
         
 #---------------Company's Summary of department and employees------------
 
+#---------------Company's is updating the leavetype------------
+def update_leavetype(request):
+    id = request.GET.get('id')
+    if request.method == "POST":
+        type_of_leave_form = LeaveTypeForm(request.POST)
+        if type_of_leave_form.is_valid():
+            cd = type_of_leave_form.cleaned_data
+            type_of_leave_obj = LeaveType.objects.get(id=id)
+            type_of_leave_obj.allowances=cd['allowances']
+            type_of_leave_obj.type_of_leave=cd['type_of_leave']
+            type_of_leave_obj.save()
+            return HttpResponseRedirect('/registration/summary/?active=leave_requests')
+        else:
+            print "LeaveTypeForm is invalid"
+    else:
+        type_of_leave_form = LeaveTypeForm()
+        try:
+            type_of_leave_obj = LeaveType.objects.get(id=id)
+            type_of_leave_form.fields['type_of_leave'].initial = type_of_leave_obj.type_of_leave
+            type_of_leave_form.fields['allowances'].initial = type_of_leave_obj.allowances
+        except:
+            pass
+            
+    return render_to_response(
+                                'registration/update_leavetype.html',
+                                {'request':request,
+                                'type_of_leave_form':type_of_leave_form,
+                                'type_of_leave_obj':type_of_leave_obj,
+                                'base_url':BASE_URL,
+                                'active':'leave_requests',
+                                },
+                                context_instance = RequestContext(request)
+                            )
+#---------------Company's has updated the leave type------------
+
+def delete_leavetype(request):
+    """
+    Leads to delete leavetype
+    """
+    
+    
+    return
 
 #--------------------Company's data in csv file--------------------------
 def export_company_data(request):
@@ -1024,3 +1093,6 @@ def password_reset(request):
                                 context_instance = RequestContext(request)
                               )
 #---------------------------------------------------------------------------
+
+
+# --------------------------------  Calender   ----------------------------- #

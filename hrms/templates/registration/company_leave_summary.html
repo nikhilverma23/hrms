@@ -7,7 +7,8 @@
 	<script id="type_of_leave_section" type="text/x-handlebars-template">
 		<div class="field">
 		    <input type="text" maxlength="256" name="type_of_leave[]" class="input-medium" id="id_type_of_leave" value="{% templatetag openvariable %}type_of_leave{% templatetag closevariable %}" />
-		    <a href="javascript:void(0)" class="delete_type_of_leave_link"><img src="/static/images/delete_icon.png"/></a>	
+                    <input type="text" maxlength="256" name="allowances[]" class="input-medium" id="id_allowances" value="{% templatetag openvariable %}allowances{% templatetag closevariable %}" />
+                    <a href="javascript:void(0)" class="delete_type_of_leave_link"><img src="/static/images/delete_icon.png"/></a>	
 		</div>
 	</script>
 	<script>
@@ -66,17 +67,22 @@
 				<legend>Type of Leave</legend>
 				<div class="field">
 					<label>Type of Leave</label>
+                                        <label>Allowances</label>
 					
 				</div>
 				<div id="type_of_leave_section_div"></div>
+                                
 				<div class="delete_type_of_type_of_leave_link">
 				    <a class="btn btn-success add_type_of_leave_link" href="javascript:void(0)">
                                         <i class="icon-plus-sign icon-white"></i>
                                         Add More
                                     </a>
 				</div>
+                                
 			</fieldset>
+                        
 		</div>
+                <div style="float: right;margin-right: 500px;margin-top: -65px">Set Weekdays{{type_of_leave_form.weekdays}}</div>
 		<div class="control-group">
 			<div class="controls">
 				<input type='hidden' name='formname' value='type_of_leave'>
@@ -86,4 +92,34 @@
                 
 	</form>
     </div>
+    
+    
+    <h4>Leave Settings Summary</h4>
+
+<table class="table table-striped table-bordered">
+	<tr class="info">
+            <td>S.No</td>
+            <td>Leave Type</td>
+            <td>Allowances</td>
+            <td>Update</td>
+            <td>Delete</td>
+	</tr>
+	
+        {% for type_of_leave in company_obj.type_of_leave.all %}
+        <tr>
+            
+            <td>{{forloop.counter}}</td>
+            <td>{{type_of_leave}}</td>
+            <td>{{type_of_leave.allowances}}</td>
+            <td onclick="document.location.href='/registration/update_leavetype/?id={{type_of_leave.id}}';">
+                    <a href="/registration/update_leavetype/?id={{type_of_leave.id}}" id="{{type_of_leave.id}}"><img src="/static/images/edit_icon.png"/></a>
+            </td>
+            <td onclick="document.location.href='/registration/leads_to_delete_page/?id={{type_of_leave.id}}';">
+                    <a href="/registration/leads_to_delete_page/?id={{department.id}}" id="{{department.id}}"><img src="/static/images/delete_icon.png"/></a>
+            </td>
+            
+        </tr>
+        {% endfor %}
+	
+</table>
 {% endblock %}  

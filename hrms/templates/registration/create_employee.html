@@ -74,28 +74,24 @@
 		<td>First Name</td>
 		<td>Last Name</td>
 		<td>Email</td>
-		<td>Supervisor</td>
 		<td>Update</td>
 		<td>Delete</td>
 	    
         </tr>
 	
-        {% for department_obj in department %}
-		{% for emp in department_obj.employee.all %}
+        {% for emp in emp_list %}
 		<tr>
 			<td>{{emp.first_name}}</td>
 			<td>{{emp.last_name}}</td>
 			<td>{{emp.email}}</td>
-			<td>{{department_obj.supervisor}}</td>
 			<td onclick="document.location.href='/registration/update_employee/?id={{emp.id}}';">
 				<img src="/static/images/edit_icon.png"/></a>
 			</td>
 			<td onclick="document.location.href='/registration/leads_to_delete_employeepage/?id={{emp.id}}';">
 				<img src="/static/images/delete_icon.png"/></a>
 			</td>
-		
 		</tr>
-		{% endfor %}
+		
 	{% endfor %}
 </table>
 

@@ -35,8 +35,11 @@ class LeaveTypeAdmin(admin.ModelAdmin):
     
 class RestrictedDayAdmin(admin.ModelAdmin):
     list_display = ('title','restriction_day_date')
+
+class DaysAdmin(admin.ModelAdmin):
+    list_display = ('day_of_week',)
     
-    
+admin.site.register(Days,DaysAdmin)
 admin.site.register(Category,CategoryAdmin)
 admin.site.register(Country,CountryAdmin)
 admin.site.register(Company,CompanyAdmin)

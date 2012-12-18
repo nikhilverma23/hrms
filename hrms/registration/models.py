@@ -29,8 +29,31 @@ class Country(models.Model):
         return self.name
     
 
+class Days(models.Model):
+    """
+    Days of the week
+    """
+    day_of_week = models.CharField(max_length=80)
+    
+    def __unicode__(self):
+        return self.day_of_week
+    
     
 
+class LeaveType(models.Model):
+    """
+    Specify the leave type.
+    """
+    type_of_leave = models.CharField(max_length=255,help_text="Type of Leave")
+    allowances = models.CharField(
+                                    max_length=80,\
+                                    help_text="How many days are provided by the company",\
+                                    null=True,blank=True
+                                    
+                                )
+    
+    def __unicode__(self):
+        return self.type_of_leave
     
 class Company(models.Model):
     """
@@ -43,6 +66,8 @@ class Company(models.Model):
                             )
     email = models.EmailField(null=True,blank=True)
     website = models.URLField(null=True,blank=True)
+    weekdays = models.ManyToManyField(Days,null=True,blank=True)
+    type_of_leave = models.ManyToManyField(LeaveType,null=True,blank=True)
     street1 = models.CharField(max_length=1024)
     street2 = models.CharField(max_length=1024, null=True, blank=True)
     state = models.CharField(max_length=1024, null=True, blank=True)
@@ -71,6 +96,8 @@ class Department(models.Model):
                             max_length=1024,help_text="Department's Name"
                             )
     company = models.ForeignKey(Company)
+    weekdays = models.ManyToManyField(Days,null=True,blank=True)
+    
     
     
     
@@ -113,14 +140,7 @@ User.profile = property(lambda u: UserProfile.objects.get_or_create(user=u)[0])
 
 
 
-class LeaveType(models.Model):
-    """
-    Specify the leave type.
-    """
-    type_of_leave = models.CharField(max_length=255,help_text="Type of Leave") 
-    
-    def __unicode__(self):
-        return self.type_of_leave
+
     
 
 
@@ -147,6 +167,7 @@ class Leave(models.Model):
         leave_count = str(self.leave_count)
         return leave_count
     
+
     
 class RestrictedDay(models.Model):
     """
@@ -172,19 +193,3 @@ class Allowances(models.Model):
     
     def __unicode__(self):
         return self.title
-
-
-#from django.dispatch import dispatcher
-#
-#def set_department(**kwargs):
-#    """
-#    Set the department in UserProfile so that they cab be achieved
-#    in editing department form.
-#    """
-#    userprofile = kwargs['instance']
-#    department_obj = Department.objects.filter()
-#    if not userprofile.department:
-#        userprofile.department = hashlib.sha1(visit.title + str(time.time())).hexdigest()
-#
-#
-#post_save.connect(set_department, sender=UserProfile)

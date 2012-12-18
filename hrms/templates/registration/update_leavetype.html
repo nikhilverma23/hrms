@@ -1,0 +1,23 @@
+{% extends "base/skeleton.html" %}
+
+{% block content %}
+<div id='update_container'>
+	<form name="leavetype_update" action="" method="post" class="form-horizontal">
+		{% csrf_token %}
+		<div>
+                    <p>Allowances:
+                    <span>{{type_of_leave_form.allowances}}</span>
+                    </p>
+                    <p>LeaveType:
+                    <span>{{type_of_leave_form.type_of_leave}}</span>
+                    </p>
+                </div>
+		<div class="control-group">
+			<div class="controls">
+				<input type='hidden' name='formname' value='leavetype'>
+				<input type="submit" class='btn btn-primary btn-large' value="update &raquo;" />
+			</div>
+		</div>
+	</form>
+</div>
+{% endblock %}
