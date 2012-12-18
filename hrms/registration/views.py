@@ -551,8 +551,6 @@ def summary(request):
         # Here we can see all the leaves
         if request.method == "POST":
             type_of_leave_form = LeaveTypeForm(request.POST)
-            import pdb
-            pdb.set_trace()
             if type_of_leave_form.is_valid():
                 
                 cd = type_of_leave_form.cleaned_data
