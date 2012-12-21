@@ -7,7 +7,7 @@
 	<script id="type_of_leave_section" type="text/x-handlebars-template">
 		<div class="field">
 		    <input type="text" maxlength="256" name="type_of_leave[]" class="input-medium" id="id_type_of_leave" value="{% templatetag openvariable %}type_of_leave{% templatetag closevariable %}" />
-                    <input type="text" maxlength="256" name="allowances[]" class="input-medium" id="id_allowances" value="{% templatetag openvariable %}allowances{% templatetag closevariable %}" />
+                    
                     <a href="javascript:void(0)" class="delete_type_of_leave_link"><img src="/static/images/delete_icon.png"/></a>	
 		</div>
 	</script>
@@ -67,7 +67,7 @@
 				<legend>Type of Leave</legend>
 				<div class="field">
 					<label>Type of Leave</label>
-                                        <label>Allowances</label>
+                                        
 					
 				</div>
 				<div id="type_of_leave_section_div"></div>
@@ -100,26 +100,21 @@
 	<tr class="info">
             <td>S.No</td>
             <td>Leave Type</td>
-            <td>Allowances</td>
             <td>Update</td>
             <td>Delete</td>
 	</tr>
-	
-        {% for type_of_leave in company_obj.type_of_leave.all %}
+        {% for type_of_leave_obj in company_leavetype_obj %}
         <tr>
-            
             <td>{{forloop.counter}}</td>
-            <td>{{type_of_leave}}</td>
-            <td>{{type_of_leave.allowances}}</td>
-            <td onclick="document.location.href='/registration/update_leavetype/?id={{type_of_leave.id}}';">
-                    <a href="/registration/update_leavetype/?id={{type_of_leave.id}}" id="{{type_of_leave.id}}"><img src="/static/images/edit_icon.png"/></a>
+            <td>{{type_of_leave_obj.type_of_leave}}</td>
+            <td onclick="document.location.href='/registration/update_leavetype/?id={{type_of_leave_obj.id}}';">
+                    <a href="/registration/update_leavetype/?id={{type_of_leave_obj.id}}" id="{{type_of_leave_obj.id}}"><img src="/static/images/edit_icon.png"/></a>
             </td>
-            <td onclick="document.location.href='/registration/leads_to_delete_page/?id={{type_of_leave.id}}';">
-                    <a href="/registration/leads_to_delete_page/?id={{department.id}}" id="{{department.id}}"><img src="/static/images/delete_icon.png"/></a>
+            <td onclick="document.location.href='/registration/leads_to_delete_leavetype_page/?id={{type_of_leave.id}}';">
+                    <a href="/registration/leads_to_delete_leavetype_page/?id={{type_of_leave_obj.id}}" id="{{type_of_leave_obj.id}}"><img src="/static/images/delete_icon.png"/></a>
             </td>
             
         </tr>
         {% endfor %}
-	
 </table>
 {% endblock %}  

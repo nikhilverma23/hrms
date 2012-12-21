@@ -6,7 +6,11 @@
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</a>
-			<a class="brand" href="{% url home %}">HRMSystems</a>
+			{% if request.user.is_authenticated and request.user.is_staff  %}
+				<a class="brand" href="{% url home %}">HRMSystems</a>
+			{% else %}
+				<a class="brand" href="">HRMSystems</a>
+			{% endif %}
 			<div class="nav-collapse collapse">
 				
 				{% if request.user.is_authenticated and request.user.is_staff  %}
@@ -23,6 +27,7 @@
 					<ul class="nav nav-tabs">
 						<li {% if active == 'profile' %}class="active"{% endif %}><a href="{% url employee_profile %}">Edit Profile</a></li>
 						<li {% if active == 'leave' %}class="active"{% endif %}><a href="{% url employee_leave %}">Leave</a></li>
+						<li {% if active == 'working_week' %}class="working_week"{% endif %}><a href="{% url employee_overriding_workingweek %}">Working Week</a></li>
 					</ul>
 					{% endif %}
 				{% endif %}
@@ -30,7 +35,8 @@
 					{% if not request.user.is_staff %}
 					<ul class="nav nav-tabs">
 						<li {% if active == 'supervisorprofile' %}class="active"{% endif %}><a href="{% url supervisor_profile %}">Edit Profile</a></li>
-						<li {% if active == 'supervisorleave' %}class="active"{% endif %}><a href="{% url supervisor_leave %}">Leave</a></li>
+						<li {% if active == 'leave' %}class="active"{% endif %}><a href="{% url supervisor_leave %}">Leave</a></li>
+						<li {% if active == 'working_week' %}class="working_week"{% endif %}><a href="{% url department_overriding_workingweek %}">Working Week</a></li>
 					</ul>
 					{% endif %}
 				{% endif %}

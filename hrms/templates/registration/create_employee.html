@@ -12,7 +12,9 @@
 				<option value="{{department_obj.id}}">{{department_obj}}</option>
 				{% endfor %}
 			</select>
-			
+			{% for day in days %}
+				<input type="checkbox" name="day[]" class="input-medium" id="{{day.id}}" value="{{day.id}}" />{{day}}
+			{% endfor  %}
 			<a href="javascript:void(0)" class="delete_employee_link"><img src="/static/images/delete_icon.png"/></a>
 			
 		</div>
@@ -52,6 +54,7 @@
 					<label>Employee Last Name</label>
 					<label>Employee Email</label>
 					<label>Employee Department</label>
+					<label>Working Week</label>
 				</div>
 				<div id="employee_section_div"></div>
 				<div class="delete_employment_link">
@@ -74,16 +77,19 @@
 		<td>First Name</td>
 		<td>Last Name</td>
 		<td>Email</td>
+		<td>Workign Week</td>
 		<td>Update</td>
 		<td>Delete</td>
 	    
         </tr>
 	
         {% for emp in emp_list %}
+		
 		<tr>
 			<td>{{emp.first_name}}</td>
 			<td>{{emp.last_name}}</td>
 			<td>{{emp.email}}</td>
+			<td>{% for weekdays in emp.profile.weekdays.all %}{{weekdays}}{% endfor %}</td>
 			<td onclick="document.location.href='/registration/update_employee/?id={{emp.id}}';">
 				<img src="/static/images/edit_icon.png"/></a>
 			</td>

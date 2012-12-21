@@ -25,7 +25,7 @@ from hrms.home.forms import LoginForm
 from hrms.registration.forms import DepartmentForm, EmployeeForm,\
 PasswordForm ,LeaveForm ,UserProfileForm, LeaveTypeForm
 from hrms.registration.models import Department, UserProfile,\
-Company, Leave, LeaveType
+Company, Leave, LeaveType, Days
 from hrms.settings import BASE_URL
 
 
@@ -153,6 +153,7 @@ def create_department(request):
     """
     Adding Department
     """
+    days = Days.objects.all()    
     userprofile_obj = UserProfile.objects.get(user=request.user)
     if request.method =="POST":
         department_form = DepartmentForm(request.POST)
@@ -166,6 +167,7 @@ def create_department(request):
             supervisor_first_name_list = request.POST.getlist('supervisor_first_name[]')
             supervisor_last_name_list = request.POST.getlist('supervisor_last_name[]')
             supervisor_email_list = request.POST.getlist('supervisor_email[]')
+            days_list = request.POST.getlist('day[]')
             for department_name in request.POST.getlist('name[]'):
                 # generating random username
                 N = 8
@@ -226,6 +228,8 @@ def create_department(request):
                     [supervisor_email_list[department_counter]],
                     fail_silently=True
                 )
+                for days_of_week in days_list:
+                    department_obj[0].weekdays.add(days_of_week)
                 department_counter += 1
             # Making sure that all department are from the current logged
             # in company and then using userprofile object adding these
@@ -235,6 +239,7 @@ def create_department(request):
             for department in get_department_obj:
                 userprofile_obj.department.add(department)
             # redirecting it to employee form
+            
             return HttpResponseRedirect('/registration/employee/')
             
     else:
@@ -245,6 +250,7 @@ def create_department(request):
                               {'request':request,
                                'department_form':department_form,
                                'active':'department',
+                               'days':days,
                                'userprofile_obj':userprofile_obj
                                },
                               context_instance = RequestContext(request)
@@ -252,7 +258,6 @@ def create_department(request):
 #---------------------------Create Department End-----------------------
 
 #--------------------------- Update Department Starts-------------------------
-
 def update_department(request):
     """
     updates the selected department.
@@ -267,6 +272,7 @@ def update_department(request):
             department_form.fields['supervisor_first_name'].initial = department_obj.supervisor.first_name
             department_form.fields['supervisor_last_name'].initial = department_obj.supervisor.last_name
             department_form.fields['supervisor_email'].initial = department_obj.supervisor.email
+            department_form.fields['weekdays'].initial = department_obj.weekdays.all()
     else:
         # It will be a POST
         department_form = DepartmentForm(request.POST)
@@ -275,6 +281,8 @@ def update_department(request):
             department_obj = Department.objects.get(id=request.GET['id'])
             department_obj.name = cd['name']
             department_obj.save()
+            for days_of_week in cd['weekdays']:
+                department_obj.weekdays.add(days_of_week)
             user_id = department_obj.supervisor.id
             user_obj =  User.objects.get(id=user_id)
             user_obj.email = cd['supervisor_email']
@@ -325,6 +333,7 @@ def create_employee(request):
     """
     Adding employees
     """
+    days = Days.objects.all()
     if request.method == "POST":
         employee_form = EmployeeForm(request.POST)
         
@@ -337,6 +346,7 @@ def create_employee(request):
             last_name_list = request.POST.getlist('last_name[]')
             employee_email_list = request.POST.getlist('employee_email[]')
             employee_department_list = request.POST.getlist('employee_department[]')
+            days_list = request.POST.getlist('day[]')
             for employee_name in request.POST.getlist('first_name[]'):
                 # generating random username because user will login
                 # and go to change password page.
@@ -362,6 +372,8 @@ def create_employee(request):
                 #department gets saved there !
                 new_profile = user_obj.profile
                 profile = user_obj.profile
+                key = uuid.uuid4().__str__()
+                profile.key = key
                 profile.department.add(employee_department_list[employment_counter])
                 profile.save()
                 
@@ -390,13 +402,16 @@ def create_employee(request):
                     [employee_email_list[employment_counter]],
                     fail_silently=True
                 )
-                
+                userprofile_obj = UserProfile.objects.get(user=user_obj)
+                for days_of_week in days_list:
+                    userprofile_obj.weekdays.add(days_of_week)
                 employment_counter += 1    
             return HttpResponseRedirect('/registration/summary/?active=leave_requests')
         
             
     else:
-        
+        weekdays = []
+        employee = []
         employee_form = EmployeeForm()
         company_obj = Company.objects.get(email=request.user.username)
         # Listing the department created by the company itself
@@ -406,13 +421,13 @@ def create_employee(request):
             for emp in department_obj.employee.all():
                 emp_list.append(emp)
             emp_list.append(department_obj.supervisor)
-            
     return render_to_response('registration/create_employee.html',
                               {'request':request,
                                'department':department,
                                'employee_form':employee_form,
                                'active':'employee',
-                               'emp_list':emp_list
+                               'emp_list':emp_list,
+                               'days':days,
                                },
                               context_instance = RequestContext(request)
                             )
@@ -425,14 +440,14 @@ def update_employee(request):
     """
     id = request.GET.get('id')
     if request.method == "GET":
-        
         user_obj = User.objects.get(id=id)
         userprofile_obj = UserProfile.objects.get(user=user_obj)
         employee_form = EmployeeForm()
-        employee_form.fields['department'].initial = userprofile_obj.department
+        employee_form.fields['department'].initial = userprofile_obj.department.all()
         employee_form.fields['first_name'].initial = user_obj.first_name
         employee_form.fields['last_name'].initial = user_obj.last_name
         employee_form.fields['employee_email'].initial = user_obj.email
+        employee_form.fields['weekdays'].initial = userprofile_obj.weekdays.all()
     else:
         # It will be a POST
         employee_form = EmployeeForm(request.POST)
@@ -450,6 +465,8 @@ def update_employee(request):
             userprofile_obj.email = cd['employee_email']
             userprofile_obj.save()
             userprofile_obj.department.add(cd['department'])
+            for days_of_week in cd['weekdays']:
+                userprofile_obj.weekdays.add(days_of_week)
             return HttpResponseRedirect('/registration/employee/')
         
     return render_to_response('registration/update_employee.html',
@@ -489,36 +506,6 @@ def delete_employee(request):
     
     return HttpResponseRedirect('/registration/employee/')
 #---------------Company is confirming to delete the employee------------
-
-#---------------Company is creating type of leave-------------
-from django.forms.formsets import formset_factory
-
-
-def create_type_of_leave(request):
-    if request.method == "POST":
-        type_of_leave_form = LeaveTypeForm(request.POST)
-        if type_of_leave_form.is_valid():
-            cd = type_of_leave_form.cleaned_data
-            type_of_leave = LeaveType.objects.get_or_create(
-                            type_of_leave = cd['type_of_leave']    
-                            )
-        else:
-            print "LeaveTypeForm is invalid"
-    else:
-        type_of_leave_form = LeaveTypeForm()
-    return render_to_response('registration/company_leave_summary.html',
-                                    {'request':request,
-                                    #'company_obj':company_obj,
-                                    #'department_obj':department_obj,
-                                    #'leave_obj':leave_obj,
-                                    'base_url':BASE_URL,
-                                    'active':'leave_requests'
-                                    },
-                                    context_instance = RequestContext(request)
-                                  )
-
-#---------------Company has created type of leaves------------
-
 
 #---------------Company's Summary of department and employees-----------
 def summary(request):
@@ -560,8 +547,6 @@ def summary(request):
                 leave_type_counter = 0
                 # company is creating leave type
                 type_of_leave_list = request.POST.getlist('type_of_leave[]')
-                # what is the allowance of that leave type
-                allowances_list = request.POST.getlist('allowances[]')
                 # the days companies will tend to work
                 # this can be overridden by department
                 # and also by the employees
@@ -569,20 +554,19 @@ def summary(request):
                 for leave_type in type_of_leave_list:
                     type_of_leave_obj = LeaveType.objects.get_or_create(
                                     type_of_leave = type_of_leave_list[leave_type_counter],
-                                    allowances = allowances_list[leave_type_counter]
+                                    company=company_obj
                     )
-                    company_obj.type_of_leave.add(type_of_leave_obj[0])
-                    company_obj.save()
                     leave_type_counter += 1
                 for days_of_week in weekdays:
                     company_obj.weekdays.add(days_of_week)
+                
                 return HttpResponseRedirect('/registration/summary/?active=summary')
                     
         else:
             type_of_leave_form = LeaveTypeForm()
             try:
-                type_of_leave_obj = LeaveType.objects.get(id=id)
-                type_of_leave_form.fields['type_of_leave'].initial = type_of_leave_obj.type_of_leave
+                company_logginfilter = Company.objects.get(email=request.user.email)
+                company_leavetype_obj = LeaveType.objects.filter(company=company_logginfilter)
             except:
                 pass
         return render_to_response('registration/company_leave_summary.html',
@@ -593,6 +577,7 @@ def summary(request):
                                     'leave_obj':leave_obj,
                                     'base_url':BASE_URL,
                                     'active':'leave_requests',
+                                    'company_leavetype_obj':company_leavetype_obj,
                                     },
                                     context_instance = RequestContext(request)
                                   )
@@ -612,6 +597,35 @@ def summary(request):
         
 #---------------Company's Summary of department and employees------------
 
+#---------------Company is creating type of leave-------------
+
+def create_type_of_leave(request):
+    if request.method == "POST":
+        type_of_leave_form = LeaveTypeForm(request.POST)
+        if type_of_leave_form.is_valid():
+            cd = type_of_leave_form.cleaned_data
+            type_of_leave = LeaveType.objects.get_or_create(
+                            type_of_leave = cd['type_of_leave']    
+                            )
+        else:
+            print "LeaveTypeForm is invalid"
+    else:
+        type_of_leave_form = LeaveTypeForm()
+    return render_to_response('registration/company_leave_summary.html',
+                                    {'request':request,
+                                    #'company_obj':company_obj,
+                                    #'department_obj':department_obj,
+                                    #'leave_obj':leave_obj,
+                                    'base_url':BASE_URL,
+                                    'active':'leave_requests'
+                                    },
+                                    context_instance = RequestContext(request)
+                                  )
+
+#---------------Company has created type of leaves------------
+
+
+
 #---------------Company's is updating the leavetype------------
 def update_leavetype(request):
     id = request.GET.get('id')
@@ -620,7 +634,7 @@ def update_leavetype(request):
         if type_of_leave_form.is_valid():
             cd = type_of_leave_form.cleaned_data
             type_of_leave_obj = LeaveType.objects.get(id=id)
-            type_of_leave_obj.allowances=cd['allowances']
+            
             type_of_leave_obj.type_of_leave=cd['type_of_leave']
             type_of_leave_obj.save()
             return HttpResponseRedirect('/registration/summary/?active=leave_requests')
@@ -631,7 +645,7 @@ def update_leavetype(request):
         try:
             type_of_leave_obj = LeaveType.objects.get(id=id)
             type_of_leave_form.fields['type_of_leave'].initial = type_of_leave_obj.type_of_leave
-            type_of_leave_form.fields['allowances'].initial = type_of_leave_obj.allowances
+            
         except:
             pass
             
@@ -647,13 +661,33 @@ def update_leavetype(request):
                             )
 #---------------Company's has updated the leave type------------
 
+#---------------Company's decides to delete the  leave type--------------
+def leads_to_delete_leavetype_page(request):
+    """
+    leads to delete confirmation page for leavetype
+    """
+    leavetype_id = request.GET.get('id')
+    leavetype_obj = LeaveType.objects.get(id=leavetype_id)
+    return render_to_response('registration/delete_leavetypepage.html',
+                              {'request':request,
+                               'leavetype_obj':leavetype_obj,
+                               'active':'leave_requests',
+                               },
+                              context_instance = RequestContext(request)
+                              )
+#------------------------Company has deleted the leavetype-----------------    
+
 def delete_leavetype(request):
     """
-    Leads to delete leavetype
+    allows the company to delete the leavetype
     """
+    id = request.GET.get('id')
+    leavetype_obj = LeaveType.objects.get(id=id)
+    leavetype_obj.delete()
     
-    
-    return
+    return HttpResponseRedirect('/registration/summary/')
+
+#---------------Company has deleted the leave type--------------
 
 #--------------------Company's data in csv file--------------------------
 def export_company_data(request):
@@ -697,7 +731,6 @@ def supervisor_detail(request):
     """
     Describe the detail of leaves to employees.
     """
-
     employee_list = []
     if request.GET.get('id'):
         user_obj = User.objects.get(id=request.GET['id'])
@@ -709,7 +742,7 @@ def supervisor_detail(request):
         employee_obj_list  = d_obj.employee.all()
     if employee_obj_list:
         for employee_name in employee_obj_list:
-            leave_obj = Leave.objects.filter(user=employee_name,status=False)
+            leave_obj = Leave.objects.filter(user=employee_name,status="Pending")
     else:
         leave_obj = ""
         
@@ -717,7 +750,8 @@ def supervisor_detail(request):
                                 'registration/supervisor_detail.html',
                                 {
                                     'request':request,'base_url':BASE_URL,
-                                    'leave_obj':leave_obj
+                                    'leave_obj':leave_obj,
+                                    'active':'leave'
                                 },
                                 
                                 context_instance = RequestContext(request)
@@ -770,7 +804,8 @@ def supervisor_profile(request):
                                 {
                                     'request':request,
                                     'department_obj':department_obj,
-                                    'userprofile_form':userprofile_form
+                                    'userprofile_form':userprofile_form,
+                                    'active':'supervisorprofile',
                                  },
                                 context_instance = RequestContext(request)
                                ) 
@@ -846,6 +881,44 @@ def supervisor_leave(request):
                                 },
                                 context_instance = RequestContext(request)
                             )
+
+#-------------------Department is overriding working days----------------------
+
+def department_overriding_workingweek(request):
+    """
+    Over rides the workig days set by the company
+    """
+    department_obj = Department.objects.get(supervisor=request.user)
+    if request.method == "POST":
+        type_of_leave_form = LeaveTypeForm(request.POST)
+        if type_of_leave_form.is_valid():
+            cd = type_of_leave_form.cleaned_data
+            for days_of_week in cd['weekdays']:
+                department_obj.weekdays.add(days_of_week)
+            
+            return HttpResponseRedirect('/registration/supervisor_leave/')
+        else:
+            print "LeaveTypeForm is invalid"
+    else:
+        type_of_leave_form = LeaveTypeForm()
+        try:
+            type_of_leave_form.fields['weekdays'].initial = department_obj.weekdays.all()
+        except:
+            pass
+    
+    return render_to_response('registration/department_workingweek.html',
+                                {
+                                 
+                                 'type_of_leave_form':type_of_leave_form,
+                                 'request':request,
+                                 'base_url':BASE_URL,
+                                 'active':'working_week'
+                                },
+                                context_instance = RequestContext(request)
+                            )
+
+#-------------------Department is overriding working days----------------------
+
 #-------------------Supervisor Section Ends------------------------------------
 
 #-------------------Employer Section Start------------------------------------
@@ -933,7 +1006,8 @@ def employee_leave(request):
                         end_date = cd['end_date'],
                         user = request.user,
                         reason = cd['reason'],
-                        supervisor = supervisor
+                        supervisor = supervisor,
+                        status = "Pending"
                         )
             leave_obj.save()
             
@@ -953,7 +1027,8 @@ def employee_leave(request):
                 'reason':cd['reason'],
                 'start_date':cd['start_date'],
                 'end_date':cd['end_date'],
-                'type_of_leave':cd['type_of_leave']
+                'type_of_leave':cd['type_of_leave'],
+                'status':"Pending"
                 
             })
             msg = t.render(c)
@@ -987,7 +1062,45 @@ def employee_leave(request):
                                 )
 #------------------------Employer Section Ends------------------------------------
 
-#-----------------------Common Functions/methods----------------------------------
+
+#-------------------Employee is overriding working days----------------------
+
+def employee_overriding_workingweek(request):
+    """
+    Over rides the workig days set by the company
+    """
+    userprofile_obj = UserProfile.objects.get(user=request.user)
+    if request.method == "POST":
+        type_of_leave_form = LeaveTypeForm(request.POST)
+        if type_of_leave_form.is_valid():
+            cd = type_of_leave_form.cleaned_data
+            for days_of_week in cd['weekdays']:
+                userprofile_obj.weekdays.add(days_of_week)
+            
+            return HttpResponseRedirect('/registration/employee_leave/')
+        else:
+            print "LeaveTypeForm is invalid"
+    else:
+        type_of_leave_form = LeaveTypeForm()
+        try:
+            type_of_leave_form.fields['weekdays'].initial = userprofile_obj.weekdays.all()
+        except:
+            pass
+    
+    return render_to_response('registration/employee_workingweek.html',
+                                {
+                                 
+                                 'type_of_leave_form':type_of_leave_form,
+                                 'request':request,
+                                 'base_url':BASE_URL,
+                                 'active':'working_week'
+                                },
+                                context_instance = RequestContext(request)
+                            )
+
+#-------------------Employee has overridden working days----------------------
+
+#-----------------------Common Functions/methods------------------------------
 
 def leave_detail(request):
     """
@@ -998,7 +1111,9 @@ def leave_detail(request):
                                 'registration/leave_detail.html',
                                 {
                                     'request':request,
-                                    'leave_obj':leave_obj
+                                    'leave_obj':leave_obj,
+                                    'active':'leave'
+                                    
                                 },
                                 context_instance = RequestContext(request)
                                 )
@@ -1011,10 +1126,10 @@ def leave_approval(request):
    
     leave_obj = Leave.objects.get(id=request.GET['id'])
     if request.GET['name'] == "accept":
-        leave_obj.status = True
+        leave_obj.status = "Accepted"
         approve_variable = "Approved"
     else:
-        leave_obj.status = False
+        leave_obj.status = "Rejected"
         approve_variable = "Disapproved"
     leave_obj.save()
         

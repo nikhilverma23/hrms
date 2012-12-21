@@ -1,0 +1,19 @@
+{% extends "base/skeleton.html" %}
+
+{% block content %}
+
+<div id='emp_container'>
+	<form name="working_days" action="" method="post" class="form-horizontal">
+		{% csrf_token %}
+		<h4>Set Working Days</h4>
+                {{type_of_leave_form.weekdays}}
+		<div class="control-group">
+			<div class="controls">
+				<input type='hidden' name='formname' value='working_days'>
+				<input type="submit" class='btn btn-primary btn-large' value="Submit &raquo;" />
+			</div>
+		</div>
+	</form>
+</div>
+
+{% endblock %}

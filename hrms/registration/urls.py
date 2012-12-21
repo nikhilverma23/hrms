@@ -29,6 +29,9 @@ urlpatterns = patterns(
     url(r'^delete_employee/$', 'delete_employee',name='delete_employee'),
     url(r'^create_type_of_leave/$', 'create_type_of_leave',name='create_type_of_leave'),
     url(r'^update_leavetype/$', 'update_leavetype',name='update_leavetype'),
-    url(r'^delete_leavetype/$', 'delete_leavetype',name='delete_leavetype')
+    url(r'^leads_to_delete_leavetype_page/$', 'leads_to_delete_leavetype_page',name='leads_to_delete_leavetype_page'),
+    url(r'^delete_leavetype/$', 'delete_leavetype',name='delete_leavetype'),
+    url(r'^department_overriding_workingweek/$', 'department_overriding_workingweek',name='department_overriding_workingweek'),
+    url(r'^employee_overriding_workingweek/$', 'employee_overriding_workingweek',name='employee_overriding_workingweek'),
     
 )

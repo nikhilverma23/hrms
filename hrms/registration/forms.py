@@ -20,11 +20,6 @@ class CompanyForm(forms.Form):
                                                 widget= forms.CheckboxSelectMultiple(),
                                                 required=False
                                             )
-    type_of_leave = forms.ModelMultipleChoiceField(
-                                            queryset=LeaveType.objects.all(),\
-                                            widget= forms.CheckboxSelectMultiple(),
-                                            required=True,
-                                        )
     
     description = forms.CharField(widget=forms.Textarea, initial='Describe omething about the company')
     #Address Fields
@@ -76,6 +71,11 @@ class DepartmentForm(forms.Form):
     supervisor_first_name = forms.CharField(max_length=255, required=False)
     supervisor_last_name = forms.CharField(max_length=255, required=False)
     supervisor_email = forms.EmailField(required=True)
+    weekdays = forms.ModelMultipleChoiceField(
+                                                queryset=Days.objects.all(),
+                                                widget= forms.CheckboxSelectMultiple(),
+                                                required=False
+                                            )
     
     
 class EmployeeForm(forms.Form):
@@ -87,19 +87,22 @@ class EmployeeForm(forms.Form):
     first_name = forms.CharField(label= "Employee First Name", max_length=255,required=True)
     last_name = forms.CharField(label= "Employee Last Name", max_length=255,required=True)
     employee_email = forms.EmailField(required=True, initial = "nikhilverma55@gmail.com")
-    
+    weekdays = forms.ModelMultipleChoiceField(
+                                                queryset=Days.objects.all(),
+                                                widget= forms.CheckboxSelectMultiple(),
+                                                required=False
+                                            )
        
 
 class LeaveTypeForm(forms.Form):
     
 
-    type_of_leave = forms.CharField(max_length=256,required=True)
+    type_of_leave = forms.CharField(max_length=256,required=False)
     weekdays = forms.ModelMultipleChoiceField(
                                                 queryset=Days.objects.all(),
                                                 widget= forms.CheckboxSelectMultiple(),
                                                 required=False
                                               )
-    allowances = forms.CharField(max_length=255,required=True)
 
 class PasswordForm(forms.Form):
     """

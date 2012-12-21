@@ -40,20 +40,6 @@ class Days(models.Model):
     
     
 
-class LeaveType(models.Model):
-    """
-    Specify the leave type.
-    """
-    type_of_leave = models.CharField(max_length=255,help_text="Type of Leave")
-    allowances = models.CharField(
-                                    max_length=80,\
-                                    help_text="How many days are provided by the company",\
-                                    null=True,blank=True
-                                    
-                                )
-    
-    def __unicode__(self):
-        return self.type_of_leave
     
 class Company(models.Model):
     """
@@ -67,7 +53,6 @@ class Company(models.Model):
     email = models.EmailField(null=True,blank=True)
     website = models.URLField(null=True,blank=True)
     weekdays = models.ManyToManyField(Days,null=True,blank=True)
-    type_of_leave = models.ManyToManyField(LeaveType,null=True,blank=True)
     street1 = models.CharField(max_length=1024)
     street2 = models.CharField(max_length=1024, null=True, blank=True)
     state = models.CharField(max_length=1024, null=True, blank=True)
@@ -84,6 +69,16 @@ class Company(models.Model):
     def __unicode__(self):
         return self.name
     
+
+class LeaveType(models.Model):
+    """
+    Specify the leave type.
+    """
+    type_of_leave = models.CharField(max_length=255,help_text="Type of Leave")
+    company = models.ForeignKey(Company,null=True,blank=True)
+    def __unicode__(self):
+        return self.type_of_leave
+
 
 class Department(models.Model):
     """
@@ -130,6 +125,7 @@ class UserProfile(models.Model):
     country = models.ForeignKey(Country,null=True, blank=True)
     company = models.ForeignKey(Company,null=True, blank=True)
     is_supervisor = models.BooleanField(default=False)
+    weekdays = models.ManyToManyField(Days,null=True,blank=True)
     
     
     def __unicode__(self):
@@ -149,6 +145,12 @@ class Leave(models.Model):
     When the employee is applying for leave
     """
     
+    LEAVE_CHOICES = (
+        ('Accepted','Accepted'),
+        ('Rejected','Rejected'),
+        ('Pending','Pending'),
+    )
+    
     type_of_leave = models.ForeignKey(LeaveType,null=True,blank=True)
     start_date = models.DateField()
     end_date = models.DateField()
@@ -156,7 +158,10 @@ class Leave(models.Model):
     department = models.ManyToManyField(Department,null=True,blank=True)
     leave_count = models.CharField(max_length=5,null=True,blank=True)
     reason = models.TextField(null=True,blank=True)
-    status = models.BooleanField(default=False)
+    status = models.CharField(max_length=80,\
+                              choices=LEAVE_CHOICES,\
+                              null=True,blank=True
+                            )
     supervisor = models.ForeignKey(
                                     User,related_name="supervisor_leave",
                                     help_text = "who is supervisor",

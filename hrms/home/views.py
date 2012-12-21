@@ -43,6 +43,8 @@ def home(request):
                     company_obj.business_year_end = cd['business_year_end']
                     company_obj.description = cd['description']
                     company_obj.save()
+                    for weekday in cd['weekdays']:
+                        company_obj.weekdays.add(weekday)
                     if user:
                         address = request.user.email
                         redirect_to = '/home/registration_update?email=%s' % \
@@ -129,7 +131,6 @@ def home(request):
             company_detail_form.fields['email'].initial = company_obj.email
             company_detail_form.fields['website'].initial = company_obj.website
             company_detail_form.fields['weekdays'].initial = company_obj.weekdays.all()
-            company_detail_form.fields['type_of_leave'].initial = company_obj.type_of_leave.all()
             company_detail_form.fields['street1'].initial = company_obj.street1
             company_detail_form.fields['street2'].initial = company_obj.street2
             company_detail_form.fields['post_code'].initial = company_obj.zip_code

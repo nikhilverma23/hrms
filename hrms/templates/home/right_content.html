@@ -5,7 +5,11 @@
 		<div class="control-group">
 			<div class="controls">
 				<input type='hidden' name='formname' value='registration'>
-				<input type="submit" class='btn btn-primary btn-large' value="Sign Up &raquo;" text="Sign Up" />
+				{% if not company_detail_form.title %}
+					<input type="submit" class='btn btn-primary btn-large' value="Sign Up &raquo;" text="Sign Up" />
+				{% else %}
+					<input type="submit" class='btn btn-primary btn-large' value="Update &raquo;" text="Update" />
+				{% endif %}
 			</div>
 		</div>
 	</form>
