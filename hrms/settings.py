@@ -8,7 +8,7 @@ sys.path.append(PROJECT_PATH)
 
 # Django settings for hrms project.
 
-DEBUG = True
+DEBUG = False
 TEMPLATE_DEBUG = DEBUG
 
 ADMINS = (
